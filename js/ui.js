@@ -240,10 +240,10 @@ function checkConfigBanner() {
       const banner = document.createElement('div');
       banner.id = 'firebaseConfigNotice';
       banner.style.cssText = `
-        background: #fffbeb;
-        color: #b45309;
-        border-bottom: 1px solid #fde68a;
-        padding: 0.75rem 1.5rem;
+        background: #eff6ff;
+        color: #1e40af;
+        border-bottom: 1px solid #bfdbfe;
+        padding: 0.65rem 1.5rem;
         font-size: 0.85rem;
         display: flex;
         align-items: center;
@@ -251,13 +251,15 @@ function checkConfigBanner() {
         position: relative;
         z-index: 10000;
         font-weight: 500;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       `;
       banner.innerHTML = `
         <div style="display:flex; align-items:center; gap:0.6rem;">
-          <i class="fa-solid fa-triangle-exclamation" style="font-size:1.1rem; color:#f59e0b;"></i>
-          <span><strong>Firebase Setup Required:</strong> Please add your project credentials into <code>js/firebase-config.js</code> to enable live cloud sync.</span>
+          <i class="fa-solid fa-circle-info" style="font-size:1.1rem; color:#2563eb;"></i>
+          <span><strong>Running in Demo Mode:</strong> You can log in and test everything right now! (When ready for college submission, add your free Firebase keys in <code>js/firebase-config.js</code>).</span>
         </div>
-        <a href="README.md" target="_blank" style="color:#d97706; text-decoration:underline; font-weight:600;">View Setup Guide</a>
+        <a href="README.md" target="_blank" style="color:#1d4ed8; text-decoration:underline; font-weight:600;">How to Connect Firebase</a>
       `;
       document.body.prepend(banner);
     }
