@@ -24,6 +24,7 @@ export const SAMPLE_RESOURCES = [
     fileUrl: "resources/cloud-computing-unit-1.pdf",
     fileType: "PDF",
     downloadCount: 14,
+    isPublished: true
   },
   {
     title: "Cloud Computing Unit 2",
@@ -34,6 +35,7 @@ export const SAMPLE_RESOURCES = [
     fileUrl: "resources/cloud-computing-unit-2.pdf",
     fileType: "PDF",
     downloadCount: 22,
+    isPublished: true
   },
   {
     title: "Database Management Systems Complete Notes",
@@ -44,6 +46,7 @@ export const SAMPLE_RESOURCES = [
     fileUrl: "resources/database-management-notes.pdf",
     fileType: "PDF",
     downloadCount: 31,
+    isPublished: true
   },
   {
     title: "Computer Networks Protocols & OSI Architecture",
@@ -54,6 +57,7 @@ export const SAMPLE_RESOURCES = [
     fileUrl: "resources/computer-networks-notes.pdf",
     fileType: "PDF",
     downloadCount: 19,
+    isPublished: true
   },
   {
     title: "Cloud Security & Identity Access Management",
@@ -64,6 +68,7 @@ export const SAMPLE_RESOURCES = [
     fileUrl: "resources/cloud-security-overview.pdf",
     fileType: "PDF",
     downloadCount: 8,
+    isPublished: true
   },
   {
     title: "Web Technology & Frontend Architectures",
@@ -74,12 +79,13 @@ export const SAMPLE_RESOURCES = [
     fileUrl: "resources/web-technology-notes.pdf",
     fileType: "PDF",
     downloadCount: 27,
+    isPublished: true
   }
 ];
 
 export async function seedDemoData(currentUser) {
-  const uid = currentUser?.uid || "system";
-  const name = currentUser?.name || currentUser?.displayName || "Study Vault";
+  const uid = currentUser?.uid || "admin-system";
+  const name = currentUser?.name || currentUser?.displayName || "Admin";
 
   if (!isConfigured) {
     const existing = JSON.parse(localStorage.getItem('study_vault_mock_resources') || '[]');

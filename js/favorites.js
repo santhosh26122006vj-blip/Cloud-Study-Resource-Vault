@@ -16,7 +16,7 @@ let favoriteResources = [];
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
 
-  initAuthGuard({ requireAuth: true }, async (profile) => {
+  initAuthGuard({ requireAuth: true, requireAdmin: false }, async (profile) => {
     currentUser = profile;
     await fetchAndRenderFavorites();
   });

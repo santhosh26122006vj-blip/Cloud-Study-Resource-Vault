@@ -317,7 +317,7 @@ export function renderResourceDetailModal(resource, isFavorited, onToggleFav) {
           </div>
           <div>
             <span class="text-xs text-muted" style="display:block;">Added By</span>
-            <strong class="text-sm">${escapeHTML(resource.uploaderName || 'Student')}</strong>
+            <strong class="text-sm">${escapeHTML(resource.uploaderName || 'Admin')}</strong>
           </div>
           <div>
             <span class="text-xs text-muted" style="display:block;">Date Added</span>
