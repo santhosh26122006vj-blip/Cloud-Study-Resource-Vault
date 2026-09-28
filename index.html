@@ -12,6 +12,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    if (window.location.protocol === 'file:') {
+      document.addEventListener('DOMContentLoaded', function() {
+        var banner = document.createElement('div');
+        banner.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:#fef2f2;color:#991b1b;border-bottom:2px solid #ef4444;padding:0.85rem 1.5rem;z-index:999999;font-family:sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;';
+        banner.innerHTML = '<div style="display:flex;align-items:center;gap:0.6rem;"><span style="font-size:1.3rem;">⚠️</span><div><strong style="font-size:0.9rem;">Browser Security Notice (file:/// protocol):</strong><span style="font-size:0.8rem;display:block;">Browsers block JavaScript modules on local file paths. To make login and buttons work, run via <strong>start.bat</strong> or host on <strong>GitHub Pages</strong>!</span></div></div><div style="background:#dc2626;color:#fff;padding:0.4rem 0.8rem;border-radius:6px;font-weight:700;font-size:0.8rem;">👉 Double-click start.bat in this folder</div>';
+        document.body.prepend(banner);
+      });
+    }
+  </script>
 </head>
 <body>
 
