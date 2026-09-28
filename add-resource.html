@@ -49,12 +49,6 @@
           <i class="fa-solid fa-star"></i>
           <span>Favorites</span>
         </a>
-
-        <div class="nav-section-title">Overview</div>
-        <a href="index.html" class="nav-item">
-          <i class="fa-solid fa-house"></i>
-          <span>Landing Page</span>
-        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -139,27 +133,6 @@
               <span class="badge badge-warning" style="font-size:0.75rem; padding:0.25rem 0.6rem;">
                 <i class="fa-solid fa-lock"></i> USER ACCESS
               </span>
-            </div>
-
-            <!-- Quick Template Presets (Convenience for testing) -->
-            <div style="background: var(--bg-surface-secondary); padding: 0.85rem 1rem; border-radius: var(--border-radius-md); margin-bottom: 1.75rem; border: 1px dashed var(--border-color);">
-              <span class="text-xs text-muted" style="font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">
-                ⚡ 1-Click Presets (Click to autofill sample curriculum data):
-              </span>
-              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Cloud Computing Unit 1" data-subject="Cloud Computing" data-unit="Unit 1" data-desc="Introduction to Cloud Computing concepts and service models." data-file="cloud-unit-1.pdf" data-url="resources/cloud-unit-1.pdf" data-type="PDF">
-                  Cloud Unit 1
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Cloud Computing Unit 2" data-subject="Cloud Computing" data-unit="Unit 2" data-desc="Cloud architecture models and distributed storage mechanisms." data-file="cloud-unit-2.pdf" data-url="resources/cloud-unit-2.pdf" data-type="PDF">
-                  Cloud Unit 2
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Database Management Notes" data-subject="Database Management Systems" data-unit="Unit 1" data-desc="Relational algebra, SQL queries, and database normalization theory." data-file="database-notes.pdf" data-url="resources/database-notes.pdf" data-type="PDF">
-                  Database Notes
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Web Technology Notes" data-subject="Web Technology" data-unit="Unit 1" data-desc="Frontend architectures, HTML5, CSS3, and JavaScript standards." data-file="web-technology.pptx" data-url="resources/web-technology.pptx" data-type="PPTX">
-                  Web Technology
-                </button>
-              </div>
             </div>
 
             <form id="addResourceForm" novalidate>
@@ -254,17 +227,7 @@
                 </div>
               </div>
 
-              <!-- 8. File Path / URL -->
-              <div class="form-group">
-                <label for="resourceFileUrl" class="form-label">File Path / URL <span class="required">*</span></label>
-                <div class="input-icon-wrapper">
-                  <i class="fa-solid fa-link"></i>
-                  <input type="text" id="resourceFileUrl" class="form-control" placeholder="e.g. resources/cloud-unit-1.pdf" required>
-                </div>
-                <span class="form-hint">Path to file in <code>resources/</code> folder or an external URL (e.g. Google Drive link)</span>
-              </div>
-
-              <!-- 9. Published Status (Checkbox) -->
+              <!-- Published Status (Checkbox) -->
               <div class="form-group" style="background:var(--bg-surface-secondary); padding:0.85rem 1rem; border-radius:var(--border-radius-md); border:1px solid var(--border-color); display:flex; align-items:center; gap:0.75rem;">
                 <input type="checkbox" id="resourcePublished" style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;" checked>
                 <label for="resourcePublished" style="margin:0; font-size:0.9rem; font-weight:600; cursor:pointer;">

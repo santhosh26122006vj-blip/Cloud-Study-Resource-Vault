@@ -1,7 +1,7 @@
 /**
  * Add Resource Controller
  * Integrates "Choose File" selector, document validation (PDF, PPT, PPTX, DOC, DOCX, TXT),
- * auto-populating file name/type/path, and Cloud Firestore metadata persistence.
+ * auto-populating file name/type, and Cloud Firestore metadata persistence.
  * Spark plan compatible: Zero Firebase Storage dependency.
  */
 
@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   setupFilePicker();
-  setupPresetButtons();
   setupFormSubmission();
 });
 
@@ -112,26 +111,21 @@ function handleFileSelected(file) {
     fileNameInput.value = file.name;
   }
 
-  // 2. Auto-populate File Path / URL: resources/filename.ext
-  const fileUrlInput = document.getElementById('resourceFileUrl');
-  if (fileUrlInput) {
-    fileUrlInput.value = `resources/${file.name}`;
-  }
 
-  // 3. Auto-populate File Type dropdown
+  // 2. Auto-populate File Type dropdown
   const fileTypeSelect = document.getElementById('resourceFileType');
   if (fileTypeSelect) {
     fileTypeSelect.value = detectedType;
   }
 
-  // 4. Auto-fill Resource Title if currently empty
+  // 3. Auto-fill Resource Title if currently empty
   const titleInput = document.getElementById('resourceTitle');
   if (titleInput && !titleInput.value.trim()) {
     const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
     titleInput.value = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
   }
 
-  // 5. Display selected file indicator in UI
+  // 4. Display selected file indicator in UI
   const container = document.getElementById('filePreviewContainer');
   if (container) {
     container.innerHTML = `
@@ -159,28 +153,10 @@ function handleFileSelected(file) {
       document.getElementById('fileInput').value = '';
       container.innerHTML = '';
       if (fileNameInput) fileNameInput.value = '';
-      if (fileUrlInput) fileUrlInput.value = '';
     };
   }
 
   showToast("File Selected", `Auto-detected: ${file.name} (${detectedType})`, "info");
-}
-
-function setupPresetButtons() {
-  const presetButtons = document.querySelectorAll('.preset-btn');
-  presetButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('resourceTitle').value = btn.getAttribute('data-title') || '';
-      document.getElementById('resourceSubject').value = btn.getAttribute('data-subject') || '';
-      document.getElementById('resourceUnit').value = btn.getAttribute('data-unit') || 'Unit 1';
-      document.getElementById('resourceDescription').value = btn.getAttribute('data-desc') || '';
-      document.getElementById('resourceFileName').value = btn.getAttribute('data-file') || '';
-      document.getElementById('resourceFileUrl').value = btn.getAttribute('data-url') || '';
-      document.getElementById('resourceFileType').value = btn.getAttribute('data-type') || 'PDF';
-
-      showToast("Preset Applied", "Fields populated with sample syllabus material.", "info");
-    });
-  });
 }
 
 function setupFormSubmission() {
@@ -210,7 +186,6 @@ function setupFormSubmission() {
     const unit = document.getElementById('resourceUnit').value;
     const description = document.getElementById('resourceDescription').value.trim();
     const fileName = document.getElementById('resourceFileName').value.trim();
-    const fileUrl = document.getElementById('resourceFileUrl').value.trim();
     const fileType = document.getElementById('resourceFileType').value;
     const isPublished = document.getElementById('resourcePublished').checked;
 
@@ -233,11 +208,6 @@ function setupFormSubmission() {
       return;
     }
 
-    if (!fileUrl) {
-      showToast("Path Required", "Please provide a file URL or relative path (e.g. resources/cloud-unit-1.pdf).", "error");
-      document.getElementById('resourceFileUrl').focus();
-      return;
-    }
 
     // UI state: saving
     submitBtn.disabled = true;
@@ -250,7 +220,7 @@ function setupFormSubmission() {
         unit,
         description,
         fileName: fileName || (selectedFile ? selectedFile.name : fileUrl.split('/').pop()),
-        fileUrl: fileUrl,
+        fileUrl: selectedFile ? `resources/${selectedFile.name}` : `resources/${fileName}`,
         fileType: fileType,
         file: selectedFile,
         isPublished: isPublished,
