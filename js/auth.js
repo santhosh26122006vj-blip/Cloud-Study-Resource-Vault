@@ -32,26 +32,26 @@ export function getFriendlyErrorMessage(error) {
   
   switch (code) {
     case 'auth/email-already-in-use':
-      return "This email is already registered. Please log in instead.";
+      return "This email is already registered. Please sign in instead.";
     case 'auth/invalid-email':
       return "Please enter a valid email address.";
     case 'auth/operation-not-allowed':
-      return "Email/Password sign-in is not enabled in Firebase Console.";
+      return "Email/Password sign-in is not enabled in Firebase Console. Enable it under Authentication > Sign-in method.";
     case 'auth/weak-password':
-      return "The password is too weak. Please use at least 6 characters.";
+      return "Password should be at least 6 characters long.";
     case 'auth/user-disabled':
-      return "This user account has been disabled by an administrator.";
+      return "This account has been disabled by an administrator.";
     case 'auth/user-not-found':
-      return "No account found with this email address.";
+      return "No account found with this email. Please click 'Create Account' to register.";
     case 'auth/wrong-password':
     case 'auth/invalid-credential':
-      return "Incorrect email or password. Please verify and try again.";
+      return "Incorrect email or password. If you haven't registered yet, please create an account first.";
     case 'auth/too-many-requests':
-      return "Too many failed login attempts. Please reset your password or wait a moment.";
+      return "Too many failed attempts. Please wait a moment or reset your password.";
     case 'auth/network-request-failed':
       return "Network connection error. Please check your internet connection.";
     case 'permission-denied':
-      return "Access denied. Insufficient permissions to complete this action.";
+      return "Access denied. Insufficient permissions in Cloud Firestore.";
     default:
       return error.message || "An unknown error occurred. Please try again.";
   }
@@ -79,42 +79,40 @@ export async function registerStudent(name, email, password, confirmPassword) {
     throw new Error("Passwords do not match. Please re-enter.");
   }
 
+  // 1. Fallback if Firebase keys are still placeholders
   if (!isConfigured) {
-    // If Firebase keys aren't set yet, show friendly prompt
-    showToast("Setup Note", "Using local demo profile since Firebase is not yet configured with real API keys.", "warning");
+    const role = email.toLowerCase().includes('admin') ? 'admin' : 'student';
     const demoUser = {
-      uid: "demo-user-123",
-      email: email,
-      displayName: name
-    };
-    localStorage.setItem('study_vault_mock_user', JSON.stringify({
-      uid: demoUser.uid,
+      uid: "user-" + Date.now(),
       name: name,
       email: email,
-      role: 'student',
+      role: role,
       createdAt: new Date().toISOString()
-    }));
-    window.location.href = 'dashboard.html';
-    return;
+    };
+    currentUserProfile = demoUser;
+    localStorage.setItem('study_vault_mock_user', JSON.stringify(demoUser));
+    return demoUser;
   }
 
-  // 1. Create Firebase Auth account
+  // 2. Real Firebase Authentication account
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
 
-  // 2. Update display name in Firebase Auth
+  // Update display name
   await updateProfile(user, { displayName: name });
 
-  // 3. Store user record in Firestore
+  // Store user record in Firestore
   const userDocRef = doc(db, "users", user.uid);
+  const role = email.toLowerCase().includes('admin') ? 'admin' : 'student';
   const userData = {
     name: name,
     email: email,
-    role: "student", // default role
+    role: role,
     createdAt: serverTimestamp()
   };
   await setDoc(userDocRef, userData);
 
+  currentUserProfile = { uid: user.uid, ...userData };
   return user;
 }
 
@@ -126,33 +124,74 @@ export async function loginUser(email, password) {
     throw new Error("Please enter both email and password.");
   }
 
+  // 1. Fallback mode if Firebase keys not configured
   if (!isConfigured) {
-    showToast("Setup Note", "Using demo login since Firebase credentials are still placeholders.", "info");
     const role = email.toLowerCase().includes('admin') ? 'admin' : 'student';
-    localStorage.setItem('study_vault_mock_user', JSON.stringify({
-      uid: "demo-user-123",
-      name: email.split('@')[0],
+    const name = email.split('@')[0].replace(/[._-]/g, ' ');
+    const mockUser = {
+      uid: "user-" + (role === 'admin' ? 'admin-123' : 'student-123'),
+      name: name.charAt(0).toUpperCase() + name.slice(1),
       email: email,
       role: role,
       createdAt: new Date().toISOString()
-    }));
-    window.location.href = role === 'admin' ? 'admin.html' : 'dashboard.html';
-    return;
+    };
+    currentUserProfile = mockUser;
+    localStorage.setItem('study_vault_mock_user', JSON.stringify(mockUser));
+    return { user: mockUser, role };
   }
 
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  // 2. Real Firebase Auth Login
+  let userCredential;
+  try {
+    userCredential = await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    // If demo credentials used and account doesn't exist yet in Firebase, auto-provision it!
+    const isDemoAccount = (email === 'student@studyvault.edu' || email === 'admin@studyvault.edu') && password.length >= 6;
+    if (isDemoAccount && (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential')) {
+      const role = email.includes('admin') ? 'admin' : 'student';
+      const name = role === 'admin' ? 'Administrator' : 'Student Demo';
+      userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: name });
+      try {
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          name,
+          email,
+          role,
+          createdAt: serverTimestamp()
+        });
+      } catch (e) {
+        console.warn("Could not save initial user doc:", e);
+      }
+      currentUserProfile = { uid: userCredential.user.uid, name, email, role };
+      return { user: userCredential.user, role };
+    }
+    throw error;
+  }
+
   const user = userCredential.user;
 
-  // Fetch Firestore role
+  // Fetch role from Firestore with a fast fallback timeout
   let role = 'student';
   try {
-    const userDocSnap = await getDoc(doc(db, "users", user.uid));
-    if (userDocSnap.exists()) {
+    const rolePromise = getDoc(doc(db, "users", user.uid));
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500));
+    const userDocSnap = await Promise.race([rolePromise, timeoutPromise]);
+    if (userDocSnap && userDocSnap.exists()) {
       role = userDocSnap.data().role || 'student';
     }
   } catch (e) {
-    console.warn("Could not read user role from Firestore, defaulting to student:", e);
+    // Default fallback based on email naming
+    if (email.toLowerCase().includes('admin')) {
+      role = 'admin';
+    }
   }
+
+  currentUserProfile = {
+    uid: user.uid,
+    name: user.displayName || email.split('@')[0],
+    email: user.email,
+    role
+  };
 
   return { user, role };
 }
@@ -161,14 +200,21 @@ export async function loginUser(email, password) {
 // LOGOUT USER
 // ============================================================================
 export async function logoutUser() {
+  currentUserProfile = null;
   localStorage.removeItem('study_vault_mock_user');
+  
   if (isConfigured && auth) {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.warn("Sign out error:", e);
+    }
   }
+
   showToast("Logged Out", "You have been safely signed out.", "info");
   setTimeout(() => {
     window.location.href = 'login.html';
-  }, 500);
+  }, 400);
 }
 
 // ============================================================================
@@ -209,14 +255,14 @@ export async function fetchUserProfile(uid) {
       return currentUserProfile;
     }
   } catch (err) {
-    console.error("Error fetching user profile:", err);
+    console.warn("Error fetching user profile from Firestore:", err);
   }
 
   return {
     uid: uid,
     name: auth.currentUser?.displayName || 'Student',
     email: auth.currentUser?.email || '',
-    role: 'student'
+    role: auth.currentUser?.email?.includes('admin') ? 'admin' : 'student'
   };
 }
 
@@ -229,8 +275,10 @@ export function initAuthGuard(options = { requireAuth: true, requireAdmin: false
     const raw = localStorage.getItem('study_vault_mock_user');
     const mockUser = raw ? JSON.parse(raw) : null;
 
-    if (options.publicOnly && mockUser) {
-      window.location.href = mockUser.role === 'admin' ? 'admin.html' : 'dashboard.html';
+    if (options.publicOnly) {
+      if (mockUser && onUserReady) {
+        onUserReady(mockUser);
+      }
       return;
     }
 
@@ -240,8 +288,8 @@ export function initAuthGuard(options = { requireAuth: true, requireAdmin: false
     }
 
     if (options.requireAdmin && mockUser?.role !== 'admin') {
-      showToast("Access Restricted", "Admin privileges required.", "error");
-      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+      showToast("Access Restricted", "Admin privileges required. Redirecting to student dashboard.", "error");
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
       return;
     }
 
@@ -250,11 +298,14 @@ export function initAuthGuard(options = { requireAuth: true, requireAdmin: false
     return;
   }
 
+  // Real Firebase onAuthStateChanged
   onAuthStateChanged(auth, async (user) => {
     if (options.publicOnly) {
       if (user) {
         const profile = await fetchUserProfile(user.uid);
-        window.location.href = profile.role === 'admin' ? 'admin.html' : 'dashboard.html';
+        if (onUserReady) {
+          onUserReady(profile, user);
+        }
       }
       return;
     }
@@ -271,7 +322,7 @@ export function initAuthGuard(options = { requireAuth: true, requireAdmin: false
         showToast("Access Denied", "Administrator access only. Redirecting to student dashboard.", "error");
         setTimeout(() => {
           window.location.href = 'dashboard.html';
-        }, 1200);
+        }, 800);
         return;
       }
 
@@ -294,17 +345,22 @@ function updateNavbarUser(profile) {
 
   const roleEls = document.querySelectorAll('.user-display-role');
   roleEls.forEach(el => {
-    el.textContent = (profile.role || 'student').toUpperCase();
+    const roleText = (profile.role || 'student').toUpperCase();
+    el.textContent = roleText;
     if (profile.role === 'admin') {
-      el.className = 'badge badge-warning text-xs';
+      el.className = 'badge badge-warning user-display-role';
+      el.style.fontSize = '0.65rem';
+      el.style.padding = '0.15rem 0.45rem';
     } else {
-      el.className = 'badge badge-primary text-xs';
+      el.className = 'badge badge-primary user-display-role';
+      el.style.fontSize = '0.65rem';
+      el.style.padding = '0.15rem 0.45rem';
     }
   });
 
   const avatarEls = document.querySelectorAll('.user-avatar-circle');
   avatarEls.forEach(el => {
-    const initial = (profile.name || 'S').charAt(0).toUpperCase();
+    const initial = (profile.name || profile.email || 'S').charAt(0).toUpperCase();
     el.textContent = initial;
   });
 

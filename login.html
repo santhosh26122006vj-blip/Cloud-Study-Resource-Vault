@@ -25,6 +25,21 @@
         <p class="text-sm text-muted">Sign in to access your cloud study vault</p>
       </div>
 
+      <!-- Active Session Notice (Shown only if already logged in) -->
+      <div id="alreadyLoggedInNotice" style="display:none; background:var(--primary-light); border:1px solid var(--primary-border); border-radius:var(--border-radius-md); padding:1rem; margin-bottom:1.5rem; text-align:center;">
+        <p style="font-size:0.875rem; color:var(--primary-dark); margin-bottom:0.75rem;">
+          You are currently signed in as <strong id="loggedInUserName">Student</strong>.
+        </p>
+        <div style="display:flex; justify-content:center; gap:0.5rem;">
+          <a href="dashboard.html" class="btn btn-primary btn-sm" id="goToDashboardBtn">
+            <i class="fa-solid fa-gauge"></i> Go to Dashboard
+          </a>
+          <button type="button" class="btn btn-secondary btn-sm" id="switchAccountBtn">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+          </button>
+        </div>
+      </div>
+
       <form id="loginForm" novalidate>
         <!-- Email -->
         <div class="form-group">
@@ -54,6 +69,21 @@
           <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Vault
         </button>
       </form>
+
+      <!-- 1-Click Quick Demo Login Section (Ideal for Testing & Evaluation) -->
+      <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color); text-align: center;">
+        <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; display: block; margin-bottom: 0.75rem;">
+          ⚡ 1-Click Quick Demo Test Logins
+        </span>
+        <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" id="quickStudentLoginBtn" style="flex: 1; min-width: 140px; font-size: 0.8rem;">
+            <i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> Student Demo
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="quickAdminLoginBtn" style="flex: 1; min-width: 140px; font-size: 0.8rem;">
+            <i class="fa-solid fa-shield-halved" style="color: var(--warning);"></i> Admin Demo
+          </button>
+        </div>
+      </div>
 
       <div class="auth-footer">
         Don't have an account yet? 
@@ -92,46 +122,85 @@
 
   <!-- Scripts -->
   <script type="module">
-    import { initAuthGuard, loginUser, resetPassword, getFriendlyErrorMessage } from './js/auth.js';
+    import { initAuthGuard, loginUser, logoutUser, resetPassword, getFriendlyErrorMessage } from './js/auth.js';
     import { showToast } from './js/ui.js';
-
-    // If user is already logged in, redirect them away from login page
-    initAuthGuard({ requireAuth: false, publicOnly: true });
 
     const form = document.getElementById('loginForm');
     const submitBtn = document.getElementById('loginSubmitBtn');
+    const emailInput = document.getElementById('loginEmail');
+    const passwordInput = document.getElementById('loginPassword');
 
+    // Check if user is already logged in, show session banner without force redirecting
+    initAuthGuard({ requireAuth: false, publicOnly: true }, (profile) => {
+      if (profile) {
+        const notice = document.getElementById('alreadyLoggedInNotice');
+        const nameEl = document.getElementById('loggedInUserName');
+        const dashBtn = document.getElementById('goToDashboardBtn');
+        const switchBtn = document.getElementById('switchAccountBtn');
+
+        if (notice && nameEl) {
+          nameEl.textContent = `${profile.name || profile.email} (${(profile.role || 'student').toUpperCase()})`;
+          notice.style.display = 'block';
+          if (dashBtn) {
+            dashBtn.href = profile.role === 'admin' ? 'admin.html' : 'dashboard.html';
+          }
+          if (switchBtn) {
+            switchBtn.onclick = async () => {
+              await logoutUser();
+              notice.style.display = 'none';
+            };
+          }
+        }
+      }
+    });
+
+    // Form Submit Handler
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
 
       if (!email || !password) {
         showToast("Validation Error", "Please provide both your email and password.", "error");
         return;
       }
 
+      await executeLogin(email, password);
+    });
+
+    // Quick Demo Login: Student
+    document.getElementById('quickStudentLoginBtn').addEventListener('click', async () => {
+      emailInput.value = 'student@studyvault.edu';
+      passwordInput.value = 'student123';
+      await executeLogin('student@studyvault.edu', 'student123');
+    });
+
+    // Quick Demo Login: Admin
+    document.getElementById('quickAdminLoginBtn').addEventListener('click', async () => {
+      emailInput.value = 'admin@studyvault.edu';
+      passwordInput.value = 'admin123';
+      await executeLogin('admin@studyvault.edu', 'admin123');
+    });
+
+    async function executeLogin(email, password) {
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span class="spinner"></span> Signing In...`;
 
       try {
         const result = await loginUser(email, password);
-        showToast("Login Successful", "Welcome back! Redirecting...", "success");
+        const destination = result.role === 'admin' ? 'admin.html' : 'dashboard.html';
+        showToast("Login Successful", `Welcome back! Redirecting to ${result.role === 'admin' ? 'Admin Portal' : 'Dashboard'}...`, "success");
 
         setTimeout(() => {
-          if (result && result.role === 'admin') {
-            window.location.href = 'admin.html';
-          } else {
-            window.location.href = 'dashboard.html';
-          }
-        }, 800);
+          window.location.href = destination;
+        }, 500);
       } catch (err) {
         console.error("Login failure:", err);
         showToast("Login Failed", getFriendlyErrorMessage(err), "error");
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Vault`;
       }
-    });
+    }
 
     // Forgot Password Handling
     const forgotModal = document.getElementById('forgotPasswordModal');
@@ -142,7 +211,7 @@
     const resetInput = document.getElementById('resetEmail');
 
     forgotBtn.onclick = () => {
-      resetInput.value = document.getElementById('loginEmail').value.trim();
+      resetInput.value = emailInput.value.trim();
       forgotModal.classList.add('active');
     };
 
