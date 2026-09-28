@@ -1,8 +1,8 @@
 /**
- * Add Resource Controller
- * Provides interactive file picker & drag-and-drop file upload.
- * Stores binary file in IndexedDB/Base64 and metadata in Cloud Firestore.
- * 100% Spark Free Plan compatible: Zero Firebase Storage dependency.
+ * Admin Add Resource Controller
+ * Integrates "Choose File" selector, document validation (PDF, PPT, PPTX, DOC, DOCX, TXT),
+ * auto-populating file name/type/path, and Cloud Firestore metadata persistence.
+ * Spark plan compatible: Zero Firebase Storage dependency.
  */
 
 import { initAuthGuard } from './auth.js';
@@ -12,29 +12,39 @@ import { createResource } from './resource-service.js';
 let currentUser = null;
 let selectedFile = null;
 
-const ALLOWED_EXTENSIONS = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.jpg', '.jpeg', '.png', '.txt'];
+// Supported document types per specification
+const SUPPORTED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.doc', '.docx', '.txt'];
 
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
 
-  // Allow ANY logged-in student or administrator to upload resources
-  initAuthGuard({ requireAuth: true, requireAdmin: false }, (profile) => {
+  // Admin Security Guard: Only administrators can add resources
+  initAuthGuard({ requireAuth: true, requireAdmin: true }, (profile) => {
     currentUser = profile;
   });
 
-  setupDropzone();
+  setupFilePicker();
   setupPresetButtons();
   setupFormSubmission();
 });
 
-function setupDropzone() {
+function setupFilePicker() {
   const dropzone = document.getElementById('uploadDropzone');
   const fileInput = document.getElementById('fileInput');
+  const chooseBtn = document.getElementById('chooseFileBtn');
 
   if (!dropzone || !fileInput) return;
 
-  dropzone.addEventListener('click', () => fileInput.click());
+  const triggerPicker = () => fileInput.click();
+  dropzone.addEventListener('click', triggerPicker);
+  if (chooseBtn) {
+    chooseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+  }
 
+  // Drag and drop events
   ['dragenter', 'dragover'].forEach(eventName => {
     dropzone.addEventListener(eventName, (e) => {
       e.preventDefault();
@@ -66,58 +76,94 @@ function setupDropzone() {
 }
 
 function handleFileSelected(file) {
-  const fileName = file.name.toLowerCase();
-  const isValidExt = ALLOWED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+  const lowerName = file.name.toLowerCase();
+  const matchedExt = SUPPORTED_EXTENSIONS.find(ext => lowerName.endsWith(ext));
 
-  if (!isValidExt) {
-    showToast("Invalid File Type", "Allowed formats: PDF, DOC, DOCX, PPT, PPTX, JPG, PNG", "error");
+  // File validation
+  if (!matchedExt) {
+    showToast("Unsupported File Type", "Please select a PDF, PPT, PPTX, DOC, DOCX or TXT file.", "error");
+    const container = document.getElementById('filePreviewContainer');
+    if (container) {
+      container.innerHTML = `
+        <div style="background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:0.75rem 1rem; border-radius:var(--border-radius-md); font-size:0.85rem;">
+          <i class="fa-solid fa-triangle-exclamation"></i> <strong>Unsupported file type:</strong> Please select a PDF, PPT, PPTX, DOC, DOCX or TXT file.
+        </div>
+      `;
+    }
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
     return;
   }
 
   selectedFile = file;
 
-  // Auto-detect type dropdown
-  const typeSelect = document.getElementById('resourceFileType');
-  if (typeSelect) {
-    if (fileName.endsWith('.pdf')) typeSelect.value = 'PDF';
-    else if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx')) typeSelect.value = 'PPT';
-    else if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) typeSelect.value = 'DOC';
-    else typeSelect.value = 'Other';
+  // Detect file type
+  let detectedType = 'PDF';
+  if (lowerName.endsWith('.pdf')) detectedType = 'PDF';
+  else if (lowerName.endsWith('.pptx')) detectedType = 'PPTX';
+  else if (lowerName.endsWith('.ppt')) detectedType = 'PPT';
+  else if (lowerName.endsWith('.docx')) detectedType = 'DOCX';
+  else if (lowerName.endsWith('.doc')) detectedType = 'DOC';
+  else if (lowerName.endsWith('.txt')) detectedType = 'TXT';
+
+  // 1. Auto-populate File Name
+  const fileNameInput = document.getElementById('resourceFileName');
+  if (fileNameInput) {
+    fileNameInput.value = file.name;
   }
 
-  // Auto-fill title if empty
+  // 2. Auto-populate File Path / URL: resources/filename.ext
+  const fileUrlInput = document.getElementById('resourceFileUrl');
+  if (fileUrlInput) {
+    fileUrlInput.value = `resources/${file.name}`;
+  }
+
+  // 3. Auto-populate File Type dropdown
+  const fileTypeSelect = document.getElementById('resourceFileType');
+  if (fileTypeSelect) {
+    fileTypeSelect.value = detectedType;
+  }
+
+  // 4. Auto-fill Resource Title if currently empty
   const titleInput = document.getElementById('resourceTitle');
   if (titleInput && !titleInput.value.trim()) {
-    const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-    titleInput.value = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+    titleInput.value = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
   }
 
-  // Render preview card
+  // 5. Display selected file indicator in UI
   const container = document.getElementById('filePreviewContainer');
   if (container) {
     container.innerHTML = `
-      <div class="file-preview-card" style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface-secondary); padding:0.85rem 1.25rem; border-radius:var(--border-radius-md); border:1px solid var(--border-color);">
+      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface-secondary); padding:0.85rem 1.25rem; border-radius:var(--border-radius-md); border:1px solid var(--border-color);">
         <div style="display:flex; align-items:center; gap:0.75rem; overflow:hidden;">
           <i class="fa-solid fa-file-circle-check" style="font-size:1.5rem; color:var(--success);"></i>
           <div style="min-width:0;">
-            <div style="font-weight:700; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(file.name)}</div>
-            <div style="font-size:0.75rem; color:var(--text-muted);">${formatFileSize(file.size)}</div>
+            <div style="font-weight:700; font-size:0.925rem; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              ${escapeHTML(file.name)}
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">
+              ${detectedType} &bull; ${formatFileSize(file.size)} &bull; Suggested: <code style="color:var(--primary);">resources/${escapeHTML(file.name)}</code>
+            </div>
           </div>
         </div>
-        <button type="button" class="btn btn-icon btn-sm" id="removeFileBtn" title="Remove file" style="color:var(--danger); border-color:var(--border-color);">
-          <i class="fa-solid fa-trash-can"></i>
+        <button type="button" class="btn btn-icon btn-sm" id="removeFileBtn" title="Remove selected file" style="color:var(--danger); border-color:var(--border-color);">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
     `;
 
-    document.getElementById('removeFileBtn').onclick = () => {
+    document.getElementById('removeFileBtn').onclick = (e) => {
+      e.stopPropagation();
       selectedFile = null;
       document.getElementById('fileInput').value = '';
       container.innerHTML = '';
+      if (fileNameInput) fileNameInput.value = '';
+      if (fileUrlInput) fileUrlInput.value = '';
     };
   }
 
-  showToast("File Selected", `Ready to upload: ${file.name}`, "info");
+  showToast("File Selected", `Auto-detected: ${file.name} (${detectedType})`, "info");
 }
 
 function setupPresetButtons() {
@@ -128,10 +174,11 @@ function setupPresetButtons() {
       document.getElementById('resourceSubject').value = btn.getAttribute('data-subject') || '';
       document.getElementById('resourceUnit').value = btn.getAttribute('data-unit') || 'Unit 1';
       document.getElementById('resourceDescription').value = btn.getAttribute('data-desc') || '';
+      document.getElementById('resourceFileName').value = btn.getAttribute('data-file') || '';
       document.getElementById('resourceFileUrl').value = btn.getAttribute('data-url') || '';
       document.getElementById('resourceFileType').value = btn.getAttribute('data-type') || 'PDF';
 
-      showToast("Preset Applied", "Fields filled with sample curriculum resource.", "info");
+      showToast("Preset Applied", "Fields populated with sample syllabus material.", "info");
     });
   });
 }
@@ -162,11 +209,12 @@ function setupFormSubmission() {
     const subject = document.getElementById('resourceSubject').value;
     const unit = document.getElementById('resourceUnit').value;
     const description = document.getElementById('resourceDescription').value.trim();
+    const fileName = document.getElementById('resourceFileName').value.trim();
     const fileUrl = document.getElementById('resourceFileUrl').value.trim();
     const fileType = document.getElementById('resourceFileType').value;
-    const isPublished = document.getElementById('resourcePublished').value === 'true';
+    const isPublished = document.getElementById('resourcePublished').checked;
 
-    // Validation
+    // Field Validations
     if (!title) {
       showToast("Validation Error", "Please provide a resource title.", "error");
       document.getElementById('resourceTitle').focus();
@@ -179,14 +227,21 @@ function setupFormSubmission() {
       return;
     }
 
-    if (!selectedFile && !fileUrl) {
-      showToast("File Required", "Please click the box to select a study file, or enter an external URL.", "warning");
+    if (!fileName && !selectedFile) {
+      showToast("File Required", "Please click 'Choose File' to select a resource document.", "warning");
+      document.getElementById('uploadDropzone').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    if (!fileUrl) {
+      showToast("Path Required", "Please provide a file URL or relative path (e.g. resources/cloud-unit-1.pdf).", "error");
+      document.getElementById('resourceFileUrl').focus();
       return;
     }
 
     // UI state: saving
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span class="spinner"></span> Storing File & Metadata...`;
+    submitBtn.innerHTML = `<span class="spinner"></span> Saving to Cloud Firestore...`;
 
     try {
       await createResource({
@@ -194,16 +249,17 @@ function setupFormSubmission() {
         subject,
         unit,
         description,
-        file: selectedFile,
+        fileName: fileName || (selectedFile ? selectedFile.name : fileUrl.split('/').pop()),
         fileUrl: fileUrl,
-        fileType,
-        isPublished,
-        currentUser
+        fileType: fileType,
+        file: selectedFile,
+        isPublished: isPublished,
+        currentUser: currentUser
       });
 
-      showToast("Upload Successful", "Study resource stored securely in Cloud Vault!", "success");
+      showToast("Resource Added", "Metadata and file reference stored in Cloud Firestore!", "success");
 
-      // Reveal success alert banner
+      // Reveal success banner
       if (successBanner) {
         successBanner.style.display = 'block';
         successBanner.scrollIntoView({ behavior: 'smooth' });
@@ -215,11 +271,11 @@ function setupFormSubmission() {
       if (preview) preview.innerHTML = '';
 
     } catch (error) {
-      console.error("Resource upload error:", error);
-      showToast("Upload Error", error.message, "error");
+      console.error("Resource creation error:", error);
+      showToast("Creation Error", error.message, "error");
     } finally {
       submitBtn.disabled = false;
-      submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource`;
+      submitBtn.innerHTML = `<i class="fa-solid fa-plus-circle"></i> ADD RESOURCE`;
     }
   });
 }

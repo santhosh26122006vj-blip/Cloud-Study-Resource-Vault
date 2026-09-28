@@ -32,19 +32,20 @@ service cloud.firestore {
     // RESOURCES COLLECTION
     // -------------------------------------------------------------------------
     match /resources/{resourceId} {
-      // Authenticated users (students & admins) can read resources
+      // Students and admins can read published resources
       allow read: if isAuthenticated();
 
-      // Authenticated students and admins can upload study resources
-      allow create: if isAuthenticated()
+      // ONLY administrators can create new study resources
+      allow create: if isAdmin()
                     && request.resource.data.title is string
                     && request.resource.data.subject is string;
 
-      // Users can delete their own uploads; admins can delete any resource
-      allow delete: if isAdmin() || (isAuthenticated() && resource.data.uploadedBy == request.auth.uid);
+      // ONLY administrators can delete resources
+      allow delete: if isAdmin();
 
-      // Users can update their own uploads; admins can update all; any user can increment downloadCount
-      allow update: if isAdmin() || (isAuthenticated() && resource.data.uploadedBy == request.auth.uid) || (
+      // Administrators can update all metadata / publication status;
+      // Students can only increment the downloadCount
+      allow update: if isAdmin() || (
         isAuthenticated() && 
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloadCount'])
       );
@@ -54,7 +55,7 @@ service cloud.firestore {
     // FAVORITES COLLECTION
     // -------------------------------------------------------------------------
     match /favorites/{favoriteId} {
-      // Students can only view, add, and remove their own bookmarked favorites
+      // Students can view, add, and remove their own bookmarked favorites
       allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;

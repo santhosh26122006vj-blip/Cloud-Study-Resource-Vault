@@ -6,7 +6,7 @@
  */
 
 import { initAuthGuard } from './auth.js';
-import { initSidebar, showToast, formatDate, getTypeBadge, escapeHTML } from './ui.js';
+import { initSidebar, showToast, formatDate, getTypeBadge, escapeHTML, renderResourceDetailModal } from './ui.js';
 import {
   getAllResources,
   updateResource,
@@ -252,6 +252,11 @@ function renderTable(resources) {
 
         <td style="text-align: right;">
           <div style="display:flex; justify-content:flex-end; gap:0.4rem; flex-wrap:wrap;">
+            <!-- View Details -->
+            <button type="button" class="btn btn-secondary btn-sm action-view-btn" data-id="${res.id}" title="View resource details">
+              <i class="fa-solid fa-circle-info"></i>
+            </button>
+
             <!-- Open File -->
             <button type="button" class="btn btn-outline btn-sm action-open-btn" data-id="${res.id}" title="Open resource file">
               <i class="fa-solid fa-arrow-up-right-from-square"></i> Open
@@ -278,6 +283,16 @@ function renderTable(resources) {
   }).join('');
 
   // Attach button event listeners
+  tbody.querySelectorAll('.action-view-btn').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.getAttribute('data-id');
+      const item = allResources.find(r => r.id === id);
+      if (item) {
+        renderResourceDetailModal(item, false, null);
+      }
+    };
+  });
+
   tbody.querySelectorAll('.action-open-btn').forEach(btn => {
     btn.onclick = async () => {
       const id = btn.getAttribute('data-id');

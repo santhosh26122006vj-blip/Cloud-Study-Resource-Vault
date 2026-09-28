@@ -41,9 +41,9 @@
           <i class="fa-solid fa-shield-halved"></i>
           <span>Admin Portal</span>
         </a>
-        <a href="add-resource.html" class="nav-item">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          <span>Upload Resource</span>
+        <a href="add-resource.html" class="nav-item admin-only">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span>Add Resource</span>
         </a>
         <a href="favorites.html" class="nav-item">
           <i class="fa-solid fa-star"></i>
@@ -92,8 +92,8 @@
             <input type="text" id="topSearchInput" placeholder="Search resources..." onkeypress="if(event.key==='Enter') window.location.href='resources.html?q='+encodeURIComponent(this.value)">
           </div>
 
-          <a href="add-resource.html" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource
+          <a href="add-resource.html" class="btn btn-primary btn-sm admin-only">
+            <i class="fa-solid fa-plus"></i> Add Resource
           </a>
         </div>
       </header>
@@ -205,11 +205,11 @@
             <a href="favorites.html" class="btn btn-secondary btn-sm">
               <i class="fa-solid fa-star" style="color:#f59e0b;"></i> Favorites
             </a>
-            <a href="add-resource.html" class="btn btn-secondary btn-sm">
-              <i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource
-            </a>
             <a href="admin.html" class="btn btn-outline btn-sm admin-only">
               <i class="fa-solid fa-shield-halved"></i> Admin Portal
+            </a>
+            <a href="add-resource.html" class="btn btn-secondary btn-sm admin-only">
+              <i class="fa-solid fa-plus"></i> Add Resource
             </a>
           </div>
         </div>
