@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
 
   // Admin Security Guard: Only administrators can add resources
-  initAuthGuard({ requireAuth: true, requireAdmin: true }, (profile) => {
+  initAuthGuard({ requireAuth: true, requireAdmin: false }, (profile) => {
     currentUser = profile;
   });
 
@@ -233,15 +233,15 @@ function setupFormSubmission() {
       return;
     }
 
-    if (!fileUrl) {
-      showToast("Path Required", "Please provide a file URL or relative path (e.g. resources/cloud-unit-1.pdf).", "error");
-      document.getElementById('resourceFileUrl').focus();
+    if (!fileUrl && !selectedFile) {
+      showToast("File Required", "Please choose a file or provide a valid file URL.", "error");
+      document.getElementById('uploadDropzone').scrollIntoView({ behavior: 'smooth' });
       return;
     }
 
     // UI state: saving
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span class="spinner"></span> Saving to Cloud Firestore...`;
+    submitBtn.innerHTML = `<span class="spinner"></span> Uploading resource...`;
 
     try {
       await createResource({
@@ -257,7 +257,7 @@ function setupFormSubmission() {
         currentUser: currentUser
       });
 
-      showToast("Resource Added", "Metadata and file reference stored in Cloud Firestore!", "success");
+      showToast("Resource Uploaded", "Your study material was uploaded and saved for other students.", "success");
 
       // Reveal success banner
       if (successBanner) {

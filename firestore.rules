@@ -2,7 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -19,47 +18,48 @@ service cloud.firestore {
       );
     }
 
-    // -------------------------------------------------------------------------
-    // USERS COLLECTION
-    // -------------------------------------------------------------------------
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create, update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
     }
 
-    // -------------------------------------------------------------------------
-    // RESOURCES COLLECTION
-    // -------------------------------------------------------------------------
     match /resources/{resourceId} {
-      // Students and admins can read published resources
+      // Any signed-in student/admin can browse resources.
       allow read: if isAuthenticated();
 
-      // ONLY administrators can create new study resources
-      allow create: if isAdmin()
-                    && request.resource.data.title is string
-                    && request.resource.data.subject is string;
+      // Students can upload their own resources. Admins can upload on behalf of the vault.
+      // fileData is Base64 and is intentionally capped so the Firestore document stays below 1 MiB.
+      allow create: if isAuthenticated()
+        && request.resource.data.title is string
+        && request.resource.data.subject is string
+        && request.resource.data.uploadedBy == request.auth.uid
+        && request.resource.data.fileName is string
+        && (
+          !('fileData' in request.resource.data) ||
+          request.resource.data.fileData == null ||
+          (request.resource.data.fileData is string && request.resource.data.fileData.size() <= 1000000)
+        );
 
-      // ONLY administrators can delete resources
-      allow delete: if isAdmin();
-
-      // Administrators can update all metadata / publication status;
-      // Students can only increment the downloadCount
+      // Admins manage everything. Students can update/delete only their own resources.
       allow update: if isAdmin() || (
-        isAuthenticated() && 
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloadCount'])
+        isAuthenticated() &&
+        resource.data.uploadedBy == request.auth.uid &&
+        request.resource.data.uploadedBy == resource.data.uploadedBy &&
+        (
+          !('fileData' in request.resource.data) ||
+          request.resource.data.fileData == null ||
+          (request.resource.data.fileData is string && request.resource.data.fileData.size() <= 1000000)
+        )
       );
+
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.uploadedBy == request.auth.uid);
     }
 
-    // -------------------------------------------------------------------------
-    // FAVORITES COLLECTION
-    // -------------------------------------------------------------------------
     match /favorites/{favoriteId} {
-      // Students can view, add, and remove their own bookmarked favorites
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
-
   }
 }

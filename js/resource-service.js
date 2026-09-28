@@ -172,7 +172,7 @@ export async function toggleFavorite(userId, resourceId) {
 export async function createResource({
   title,
   subject,
-  unit,
+  unit = 'Unit 1',
   description = '',
   fileName = '',
   fileUrl = '',
@@ -181,50 +181,52 @@ export async function createResource({
   isPublished = true,
   currentUser
 }) {
-  if (!title || !title.trim()) {
-    throw new Error("Resource title is required.");
-  }
-  if (!subject || !subject.trim()) {
-    throw new Error("Subject is required.");
-  }
+  if (!title || !title.trim()) throw new Error("Resource title is required.");
+  if (!subject || !subject.trim()) throw new Error("Subject is required.");
+  if (!currentUser?.uid) throw new Error("You must be logged in to upload a resource.");
 
-  // Determine file name and URL
+  // Firebase Spark has no Cloud Storage access. To keep real uploads shared
+  // between students without Storage, small study files are stored as Base64
+  // inside the Firestore resource document. Firestore documents are limited to
+  // 1 MiB, so keep the binary payload safely below that limit.
+  const MAX_FILE_BYTES = 700 * 1024;
+
   let cleanFileName = (fileName || (file ? file.name : '')).trim();
   let cleanUrl = (fileUrl || '').trim();
-
-  if (!cleanUrl && file) {
-    cleanUrl = `resources/${file.name}`;
-  }
-
-  if (!cleanFileName && cleanUrl) {
-    cleanFileName = cleanUrl.split('/').pop().split('?')[0] || 'study-resource';
-  }
-
-  if (!cleanUrl && !file) {
-    throw new Error("Please select a study material file or enter a valid resource URL.");
-  }
-
-  // Detect file type if not specified
-  let detectedType = (fileType || 'PDF').toUpperCase();
-  if (file && (!fileType || fileType === 'Other')) {
-    const ext = file.name.toLowerCase();
-    if (ext.endsWith('.pdf')) detectedType = 'PDF';
-    else if (ext.endsWith('.ppt') || ext.endsWith('.pptx')) detectedType = 'PPT';
-    else if (ext.endsWith('.doc') || ext.endsWith('.docx')) detectedType = 'DOC';
-  }
-
-  // Base64 encoding for files <= 750KB (fits within Firestore 1MB doc limit)
   let fileData = null;
-  if (file && file.size <= 750 * 1024) {
+
+  if (file) {
+    if (file.size > MAX_FILE_BYTES) {
+      throw new Error(`This free-plan uploader supports files up to 700 KB. Your file is ${Math.ceil(file.size / 1024)} KB. Please compress the file or choose a smaller version.`);
+    }
+
+    cleanFileName = file.name;
+    cleanUrl = cleanUrl || `resources/${encodeURIComponent(file.name)}`;
     try {
       fileData = await fileToBase64(file);
     } catch (e) {
-      console.warn("Base64 conversion failed:", e);
+      throw new Error("The selected file could not be prepared for upload. Please try again.");
     }
   }
 
-  const uploaderId = currentUser?.uid || "user-system";
-  const uploaderName = currentUser?.name || currentUser?.displayName || (currentUser?.role === 'admin' ? "Administrator" : "Student");
+  if (!cleanFileName && cleanUrl) {
+    cleanFileName = decodeURIComponent(cleanUrl.split('/').pop().split('?')[0] || 'study-resource');
+  }
+  if (!cleanUrl && !fileData) {
+    throw new Error("Please choose a study material file or enter a valid resource URL.");
+  }
+
+  let detectedType = (fileType || 'Other').toUpperCase();
+  const ext = cleanFileName.toLowerCase();
+  if (ext.endsWith('.pdf')) detectedType = 'PDF';
+  else if (ext.endsWith('.pptx')) detectedType = 'PPTX';
+  else if (ext.endsWith('.ppt')) detectedType = 'PPT';
+  else if (ext.endsWith('.docx')) detectedType = 'DOCX';
+  else if (ext.endsWith('.doc')) detectedType = 'DOC';
+  else if (ext.endsWith('.txt')) detectedType = 'TXT';
+
+  const uploaderId = currentUser.uid;
+  const uploaderName = currentUser.name || currentUser.displayName || 'Student';
 
   const resourceData = {
     title: title.trim(),
@@ -235,40 +237,34 @@ export async function createResource({
     fileUrl: cleanUrl,
     fileType: detectedType,
     fileSize: file ? file.size : 0,
-    fileData: fileData, // Inline data for small files
+    fileData,
     uploadedBy: uploaderId,
-    uploaderName: uploaderName,
+    uploaderName,
     createdAt: isConfigured ? serverTimestamp() : new Date().toISOString(),
     downloadCount: 0,
+    // Student uploads are immediately visible so classmates can use them.
     isPublished: isPublished !== false
   };
 
-  // Mock mode fallback
   if (!isConfigured) {
-    const newRes = {
-      id: "res-" + Date.now(),
-      ...resourceData
-    };
-
-    if (file) {
-      await saveFileBlob(newRes.id, file);
-      if (cleanFileName) await saveFileBlob(cleanFileName, file);
-    }
-
+    const newRes = { id: "res-" + Date.now(), ...resourceData };
     const currentList = getMockResources();
     currentList.unshift(newRes);
     saveMockResources(currentList);
     return newRes;
   }
 
-  // Save directly to Firestore
   const newDocRef = doc(collection(db, "resources"));
   await setDoc(newDocRef, resourceData);
 
-  // Save binary file into local IndexedDB
+  // IndexedDB is only a local cache for the uploader; Firestore fileData is
+  // the shared source so other students can download the same file.
   if (file) {
-    await saveFileBlob(newDocRef.id, file);
-    if (cleanFileName) await saveFileBlob(cleanFileName, file);
+    try {
+      await saveFileBlob(newDocRef.id, file);
+    } catch (e) {
+      console.warn("Local file cache warning:", e);
+    }
   }
 
   return { id: newDocRef.id, ...resourceData };
