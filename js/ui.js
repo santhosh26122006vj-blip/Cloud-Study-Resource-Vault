@@ -4,6 +4,7 @@
  */
 
 import { isConfigured } from './firebase-config.js';
+import { openStudyResource } from './file-storage.js';
 
 // ============================================================================
 // TOAST NOTIFICATIONS
@@ -349,22 +350,22 @@ export function renderResourceDetailModal(resource, isFavorited, onToggleFav) {
         </button>
 
         <div style="display:flex; gap:0.5rem;">
-          ${resource.fileUrl ? `
-            <a href="${escapeHTML(resource.fileUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Resource
-            </a>
-            <a href="${escapeHTML(resource.fileUrl)}" download="${escapeHTML(resource.fileName || 'resource')}" target="_blank" class="btn btn-secondary btn-sm">
-              <i class="fa-solid fa-download"></i> Download
-            </a>
-          ` : `
-            <button class="btn btn-secondary btn-sm" disabled>No file link</button>
-          `}
+          <button type="button" class="btn btn-primary btn-sm" id="modalOpenResourceBtn">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Resource
+          </button>
         </div>
       </div>
     </div>
   `;
 
   modal.classList.add('active');
+
+  const openBtn = modal.querySelector('#modalOpenResourceBtn');
+  if (openBtn) {
+    openBtn.onclick = async () => {
+      await openStudyResource(resource);
+    };
+  }
 
   const closeBtn = modal.querySelector('#closeDetailModal');
   closeBtn.onclick = () => modal.classList.remove('active');

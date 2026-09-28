@@ -22,6 +22,8 @@ import {
   serverTimestamp
 } from './firebase-config.js';
 
+import { saveFileBlob, fileToBase64 } from './file-storage.js';
+
 // ============================================================================
 // LOCAL STORAGE MOCK HELPERS (Offline / Demo Fallback)
 // ============================================================================
@@ -173,8 +175,9 @@ export async function createResource({
   unit,
   description = '',
   fileName = '',
-  fileUrl,
+  fileUrl = '',
   fileType = 'PDF',
+  file = null,
   isPublished = true,
   currentUser
 }) {
@@ -184,19 +187,44 @@ export async function createResource({
   if (!subject || !subject.trim()) {
     throw new Error("Subject is required.");
   }
-  if (!fileUrl || !fileUrl.trim()) {
-    throw new Error("Please enter a valid resource file URL or local path (e.g. resources/cloud-computing-unit-1.pdf).");
+
+  // Determine file name and URL
+  let cleanFileName = (fileName || (file ? file.name : '')).trim();
+  let cleanUrl = (fileUrl || '').trim();
+
+  if (!cleanUrl && file) {
+    cleanUrl = `resources/${file.name}`;
   }
 
-  // Derive fileName if empty
-  const cleanUrl = fileUrl.trim();
-  let cleanFileName = (fileName || '').trim();
-  if (!cleanFileName) {
+  if (!cleanFileName && cleanUrl) {
     cleanFileName = cleanUrl.split('/').pop().split('?')[0] || 'study-resource';
   }
 
-  const uploaderId = currentUser?.uid || "admin-system";
-  const uploaderName = currentUser?.name || currentUser?.displayName || "Administrator";
+  if (!cleanUrl && !file) {
+    throw new Error("Please select a study material file or enter a valid resource URL.");
+  }
+
+  // Detect file type if not specified
+  let detectedType = (fileType || 'PDF').toUpperCase();
+  if (file && (!fileType || fileType === 'Other')) {
+    const ext = file.name.toLowerCase();
+    if (ext.endsWith('.pdf')) detectedType = 'PDF';
+    else if (ext.endsWith('.ppt') || ext.endsWith('.pptx')) detectedType = 'PPT';
+    else if (ext.endsWith('.doc') || ext.endsWith('.docx')) detectedType = 'DOC';
+  }
+
+  // Base64 encoding for files <= 750KB (fits within Firestore 1MB doc limit)
+  let fileData = null;
+  if (file && file.size <= 750 * 1024) {
+    try {
+      fileData = await fileToBase64(file);
+    } catch (e) {
+      console.warn("Base64 conversion failed:", e);
+    }
+  }
+
+  const uploaderId = currentUser?.uid || "user-system";
+  const uploaderName = currentUser?.name || currentUser?.displayName || (currentUser?.role === 'admin' ? "Administrator" : "Student");
 
   const resourceData = {
     title: title.trim(),
@@ -205,7 +233,9 @@ export async function createResource({
     description: (description || '').trim(),
     fileName: cleanFileName,
     fileUrl: cleanUrl,
-    fileType: (fileType || 'PDF').toUpperCase(),
+    fileType: detectedType,
+    fileSize: file ? file.size : 0,
+    fileData: fileData, // Inline data for small files
     uploadedBy: uploaderId,
     uploaderName: uploaderName,
     createdAt: isConfigured ? serverTimestamp() : new Date().toISOString(),
@@ -219,6 +249,12 @@ export async function createResource({
       id: "res-" + Date.now(),
       ...resourceData
     };
+
+    if (file) {
+      await saveFileBlob(newRes.id, file);
+      if (cleanFileName) await saveFileBlob(cleanFileName, file);
+    }
+
     const currentList = getMockResources();
     currentList.unshift(newRes);
     saveMockResources(currentList);
@@ -228,6 +264,12 @@ export async function createResource({
   // Save directly to Firestore
   const newDocRef = doc(collection(db, "resources"));
   await setDoc(newDocRef, resourceData);
+
+  // Save binary file into local IndexedDB
+  if (file) {
+    await saveFileBlob(newDocRef.id, file);
+    if (cleanFileName) await saveFileBlob(cleanFileName, file);
+  }
 
   return { id: newDocRef.id, ...resourceData };
 }

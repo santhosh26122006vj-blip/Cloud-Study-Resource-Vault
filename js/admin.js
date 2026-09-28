@@ -14,6 +14,7 @@ import {
   togglePublishStatus,
   getDashboardStats
 } from './resource-service.js';
+import { openStudyResource } from './file-storage.js';
 import { seedDemoData } from './demo-data.js';
 
 let currentUser = null;
@@ -252,7 +253,7 @@ function renderTable(resources) {
         <td style="text-align: right;">
           <div style="display:flex; justify-content:flex-end; gap:0.4rem; flex-wrap:wrap;">
             <!-- Open File -->
-            <button type="button" class="btn btn-outline btn-sm action-open-btn" data-url="${escapeHTML(res.fileUrl)}" title="Open resource file">
+            <button type="button" class="btn btn-outline btn-sm action-open-btn" data-id="${res.id}" title="Open resource file">
               <i class="fa-solid fa-arrow-up-right-from-square"></i> Open
             </button>
 
@@ -278,12 +279,13 @@ function renderTable(resources) {
 
   // Attach button event listeners
   tbody.querySelectorAll('.action-open-btn').forEach(btn => {
-    btn.onclick = () => {
-      const url = btn.getAttribute('data-url');
-      if (url) {
-        window.open(url, '_blank');
+    btn.onclick = async () => {
+      const id = btn.getAttribute('data-id');
+      const item = allResources.find(r => r.id === id);
+      if (item) {
+        await openStudyResource(item);
       } else {
-        showToast("Error", "No valid file URL found for this resource.", "warning");
+        showToast("Error", "Resource not found.", "warning");
       }
     };
   });

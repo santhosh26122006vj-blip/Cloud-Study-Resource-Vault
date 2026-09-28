@@ -23,9 +23,7 @@ service cloud.firestore {
     // USERS COLLECTION
     // -------------------------------------------------------------------------
     match /users/{userId} {
-      // Authenticated users can read profiles for author names
       allow read: if isAuthenticated();
-      // Users can manage their own profile, or admins can update
       allow create, update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
     }
@@ -37,17 +35,16 @@ service cloud.firestore {
       // Authenticated users (students & admins) can read resources
       allow read: if isAuthenticated();
 
-      // Only administrators can create new study resources
-      allow create: if isAdmin()
+      // Authenticated students and admins can upload study resources
+      allow create: if isAuthenticated()
                     && request.resource.data.title is string
-                    && request.resource.data.subject is string
-                    && request.resource.data.fileUrl is string;
+                    && request.resource.data.subject is string;
 
-      // Only administrators can delete resources
-      allow delete: if isAdmin();
+      // Users can delete their own uploads; admins can delete any resource
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.uploadedBy == request.auth.uid);
 
-      // Administrators can update any resource field; students can only increment downloadCount
-      allow update: if isAdmin() || (
+      // Users can update their own uploads; admins can update all; any user can increment downloadCount
+      allow update: if isAdmin() || (isAuthenticated() && resource.data.uploadedBy == request.auth.uid) || (
         isAuthenticated() && 
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloadCount'])
       );

@@ -8,6 +8,7 @@
 import { initAuthGuard } from './auth.js';
 import { initSidebar, showToast, renderResourceDetailModal, formatDate, getTypeBadge, escapeHTML } from './ui.js';
 import { getAllResources, getUserFavoriteIds, toggleFavorite, incrementDownloadCount } from './resource-service.js';
+import { openStudyResource } from './file-storage.js';
 
 let currentUser = null;
 let allResources = [];
@@ -300,22 +301,21 @@ function renderGrid(resources) {
 
   // Open resource button listener
   container.querySelectorAll('.open-resource-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      const url = btn.getAttribute('data-url');
       const id = btn.getAttribute('data-id');
-      const count = parseInt(btn.getAttribute('data-downloads') || '0', 10);
+      const item = allResources.find(r => r.id === id);
 
-      if (!url) {
-        showToast("Unavailable", "File link not provided for this resource.", "warning");
+      if (!item) {
+        showToast("Error", "Resource not found.", "warning");
         return;
       }
 
       // Increment download/open counter in Firestore
-      incrementDownloadCount(id, count);
+      incrementDownloadCount(id, item.downloadCount || 0);
 
-      // Safe direct open
-      window.open(url, "_blank");
+      // Open via Blob, Base64, or URL
+      await openStudyResource(item);
     });
   });
 

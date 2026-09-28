@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Resource - Cloud Study Resource Vault</title>
+  <title>Upload Resource - Cloud Study Resource Vault</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,13 +37,13 @@
           <i class="fa-solid fa-compass"></i>
           <span>Browse Resources</span>
         </a>
+        <a href="add-resource.html" class="nav-item active">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Upload Resource</span>
+        </a>
         <a href="admin.html" class="nav-item admin-only">
           <i class="fa-solid fa-shield-halved"></i>
           <span>Admin Portal</span>
-        </a>
-        <a href="add-resource.html" class="nav-item active admin-only">
-          <i class="fa-solid fa-plus-circle"></i>
-          <span>Add Resource</span>
         </a>
         <a href="favorites.html" class="nav-item">
           <i class="fa-solid fa-star"></i>
@@ -59,11 +59,11 @@
 
       <div class="sidebar-footer">
         <div class="user-snippet">
-          <div class="user-avatar-circle" style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);">A</div>
+          <div class="user-avatar-circle">S</div>
           <div class="user-snippet-info">
-            <div class="user-snippet-name user-display-name">Administrator</div>
+            <div class="user-snippet-name user-display-name">Loading...</div>
             <div class="user-snippet-role">
-              <span class="badge badge-warning user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">ADMIN</span>
+              <span class="badge badge-primary user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">STUDENT</span>
             </div>
           </div>
           <button type="button" class="btn-icon btn-sm logout-trigger-btn" title="Sign Out" style="background:transparent; border-color:var(--sidebar-border); color:#cbd5e1;">
@@ -82,16 +82,13 @@
             <i class="fa-solid fa-bars"></i>
           </button>
           <div class="header-title-wrapper">
-            <h2>Add Study Resource</h2>
+            <h2>Upload Study Material</h2>
           </div>
         </div>
 
         <div class="header-right">
-          <a href="admin.html" class="btn btn-secondary btn-sm">
-            <i class="fa-solid fa-shield-halved"></i> Admin Portal
-          </a>
           <a href="resources.html" class="btn btn-secondary btn-sm">
-            <i class="fa-solid fa-compass"></i> Browse Resources
+            <i class="fa-solid fa-arrow-left"></i> Browse Resources
           </a>
         </div>
       </header>
@@ -102,9 +99,9 @@
 
           <!-- Spark Plan Notice Banner -->
           <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-            <i class="fa-solid fa-circle-info" style="color: var(--primary); font-size: 1.25rem;"></i>
+            <i class="fa-solid fa-circle-check" style="color: var(--primary); font-size: 1.25rem;"></i>
             <div style="font-size: 0.85rem; color: #1e3a8a;">
-              <strong>100% Spark (Free) Plan Compatible:</strong> Resource files are stored locally in the project's <code>/resources/</code> directory or linked via web URLs. Metadata is saved directly in Cloud Firestore.
+              <strong>100% Spark Free Plan & Direct File Upload:</strong> Choose any study material (PDF, PPT, DOC, Image) from your computer. It is stored securely without requiring paid Firebase Storage!
             </div>
           </div>
 
@@ -113,17 +110,14 @@
             <div style="width:48px; height:48px; border-radius:50%; background:#d1fae5; color:var(--success); display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin:0 auto 1rem auto;">
               <i class="fa-solid fa-check"></i>
             </div>
-            <h3 style="color:#065f46; font-size:1.35rem; margin-bottom:0.4rem;">Resource Added Successfully!</h3>
-            <p style="color:#047857; font-size:0.9rem; margin-bottom:1.25rem;">Metadata document created in Cloud Firestore. Students can now immediately access and open this resource.</p>
+            <h3 style="color:#065f46; font-size:1.35rem; margin-bottom:0.4rem;">Resource Uploaded Successfully!</h3>
+            <p style="color:#047857; font-size:0.9rem; margin-bottom:1.25rem;">Your study material is now saved and available for students to browse and open.</p>
             <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
               <a href="resources.html" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-compass"></i> View in Browse
               </a>
-              <a href="admin.html" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-shield-halved"></i> Go to Admin Portal
-              </a>
-              <button type="button" class="btn btn-secondary btn-sm" id="addAnotherBtn">
-                <i class="fa-solid fa-plus"></i> Add Another
+              <button type="button" class="btn btn-secondary btn-sm" id="uploadAnotherBtn">
+                <i class="fa-solid fa-plus"></i> Upload Another File
               </button>
             </div>
           </div>
@@ -132,14 +126,14 @@
           <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--border-radius-xl); padding:2rem 2.5rem; box-shadow:var(--shadow-sm);">
             
             <div style="margin-bottom: 2rem;">
-              <h3 style="font-size: 1.35rem; margin-bottom: 0.35rem;">Add New Study Material</h3>
-              <p class="text-sm text-muted">Register notes, syllabus presentations, or reference documents to Cloud Firestore.</p>
+              <h3 style="font-size: 1.35rem; margin-bottom: 0.35rem;">Upload Study Material</h3>
+              <p class="text-sm text-muted">Contribute lecture notes, question papers, presentations, or reference documents.</p>
             </div>
 
-            <!-- Quick Template Autofill (Convenience for testing) -->
-            <div style="background: var(--bg-surface-secondary); padding: 1rem; border-radius: var(--border-radius-md); margin-bottom: 1.75rem; border: 1px dashed var(--border-color);">
+            <!-- Quick Template Presets (Convenience for testing) -->
+            <div style="background: var(--bg-surface-secondary); padding: 0.85rem 1rem; border-radius: var(--border-radius-md); margin-bottom: 1.75rem; border: 1px dashed var(--border-color);">
               <span class="text-xs text-muted" style="font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">
-                ⚡ Quick Presets (Click to autofill from project /resources/ folder):
+                ⚡ Quick Presets (Click to autofill sample curriculum data):
               </span>
               <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Cloud Computing Unit 1 Notes" data-subject="Cloud Computing" data-unit="Unit 1" data-desc="Introduction to cloud computing, NIST service models (IaaS, PaaS, SaaS) and virtualization." data-file="cloud-computing-unit-1.pdf" data-url="resources/cloud-computing-unit-1.pdf" data-type="PDF">
@@ -148,23 +142,47 @@
                 <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Cloud Computing Unit 2 Architecture" data-subject="Cloud Computing" data-unit="Unit 2" data-desc="Distributed file systems, cloud storage models, and cluster computing architectures." data-file="cloud-computing-unit-2.pdf" data-url="resources/cloud-computing-unit-2.pdf" data-type="PDF">
                   Cloud Unit 2
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Database Management Systems Unit 1" data-subject="Database Management Systems" data-unit="Unit 1" data-desc="Relational algebra, SQL fundamentals, and database normalization theory." data-file="database-management-notes.pdf" data-url="resources/database-management-notes.pdf" data-type="PDF">
+                <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Database Management Systems Complete Notes" data-subject="Database Management Systems" data-unit="Unit 1" data-desc="Relational algebra, SQL queries, and database normalization theory." data-file="database-management-notes.pdf" data-url="resources/database-management-notes.pdf" data-type="PDF">
                   Database Notes
                 </button>
-                <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Computer Networks Unit 2 Protocols" data-subject="Computer Networks" data-unit="Unit 2" data-desc="OSI and TCP/IP protocol suites, IP subnetting, and switching protocols." data-file="computer-networks-notes.pdf" data-url="resources/computer-networks-notes.pdf" data-type="PDF">
+                <button type="button" class="btn btn-secondary btn-sm preset-btn" data-title="Computer Networks Protocol Suite" data-subject="Computer Networks" data-unit="Unit 2" data-desc="OSI and TCP/IP protocol suites, IP subnetting, and switching protocols." data-file="computer-networks-notes.pdf" data-url="resources/computer-networks-notes.pdf" data-type="PDF">
                   Networks Notes
                 </button>
               </div>
             </div>
 
             <form id="addResourceForm" novalidate>
-              <!-- 1. Resource Title -->
-              <div class="form-group">
-                <label for="resourceTitle" class="form-label">Resource Title <span class="required">*</span></label>
-                <input type="text" id="resourceTitle" class="form-control" placeholder="e.g. Cloud Computing Unit 1 Notes" required>
+
+              <!-- File Upload Dropzone (Interactive Drag & Drop / File Picker) -->
+              <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">Study Material File <span class="required">*</span></label>
+                
+                <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.txt">
+
+                <div class="upload-dropzone" id="uploadDropzone">
+                  <div class="upload-icon">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                  </div>
+                  <div>
+                    <strong style="font-size: 1rem;">Click to browse or drag & drop file here</strong>
+                    <p class="text-xs text-muted" style="margin-top: 0.25rem;">Supported: PDF, PPT, PPTX, DOC, DOCX, JPG, PNG (Any size)</p>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" style="pointer-events: none;">
+                    Browse File
+                  </button>
+                </div>
+
+                <!-- Preview container (Appears when a file is selected) -->
+                <div id="filePreviewContainer" style="margin-top: 0.75rem;"></div>
               </div>
 
-              <!-- 2. Subject & 3. Unit (2-col grid) -->
+              <!-- Resource Title -->
+              <div class="form-group">
+                <label for="resourceTitle" class="form-label">Resource Title <span class="required">*</span></label>
+                <input type="text" id="resourceTitle" class="form-control" placeholder="e.g. Cloud Computing Unit 1 Lecture Notes" required>
+              </div>
+
+              <!-- Subject & Unit (2-col grid) -->
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
                 <div class="form-group">
                   <label for="resourceSubject" class="form-label">Subject <span class="required">*</span></label>
@@ -197,20 +215,14 @@
                 </div>
               </div>
 
-              <!-- 4. Description -->
+              <!-- Description -->
               <div class="form-group">
                 <label for="resourceDescription" class="form-label">Description</label>
-                <textarea id="resourceDescription" class="form-control" rows="3" placeholder="Introduction to cloud computing and service models..."></textarea>
+                <textarea id="resourceDescription" class="form-control" rows="3" placeholder="Brief summary of syllabus topics covered in this material..."></textarea>
               </div>
 
-              <!-- 5. File Name & 7. File Type (2-col grid) -->
+              <!-- File Type & Publication Status (2-col grid) -->
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
-                <div class="form-group">
-                  <label for="resourceFileName" class="form-label">File Name</label>
-                  <input type="text" id="resourceFileName" class="form-control" placeholder="e.g. cloud-unit-1.pdf">
-                  <span class="form-hint">Display name of the resource file</span>
-                </div>
-
                 <div class="form-group">
                   <label for="resourceFileType" class="form-label">File Type <span class="required">*</span></label>
                   <select id="resourceFileType" class="form-control" required>
@@ -222,33 +234,32 @@
                     <option value="Other">Other</option>
                   </select>
                 </div>
+
+                <div class="form-group">
+                  <label for="resourcePublished" class="form-label">Published Status</label>
+                  <select id="resourcePublished" class="form-control">
+                    <option value="true" selected>Yes (Published & Visible)</option>
+                    <option value="false">No (Draft / Unpublished)</option>
+                  </select>
+                </div>
               </div>
 
-              <!-- 6. File URL / Relative Path -->
+              <!-- Optional External URL / Relative Path -->
               <div class="form-group">
-                <label for="resourceFileUrl" class="form-label">File URL / Relative Path <span class="required">*</span></label>
+                <label for="resourceFileUrl" class="form-label">External URL / Custom Path (Optional)</label>
                 <div class="input-icon-wrapper">
                   <i class="fa-solid fa-link"></i>
-                  <input type="text" id="resourceFileUrl" class="form-control" placeholder="e.g. resources/cloud-computing-unit-1.pdf or https://..." required>
+                  <input type="text" id="resourceFileUrl" class="form-control" placeholder="https://drive.google.com/... or resources/my-file.pdf">
                 </div>
-                <span class="form-hint">Use relative paths (e.g. <code>resources/cloud-unit-1.pdf</code>) or external links (e.g. <code>https://...</code>)</span>
-              </div>
-
-              <!-- 8. Published (Yes / No) -->
-              <div class="form-group">
-                <label for="resourcePublished" class="form-label">Published Status</label>
-                <select id="resourcePublished" class="form-control">
-                  <option value="true" selected>Yes (Visible to Students)</option>
-                  <option value="false">No (Draft / Hidden from Students)</option>
-                </select>
+                <span class="form-hint">Optional: for Google Drive links, YouTube videos, or pre-existing /resources/ files.</span>
               </div>
 
               <!-- Submit Buttons -->
               <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                 <button type="submit" class="btn btn-primary" id="submitResourceBtn" style="flex: 1;">
-                  <i class="fa-solid fa-plus-circle"></i> Add Resource
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource
                 </button>
-                <a href="admin.html" class="btn btn-secondary">Cancel</a>
+                <a href="resources.html" class="btn btn-secondary">Cancel</a>
               </div>
             </form>
 
