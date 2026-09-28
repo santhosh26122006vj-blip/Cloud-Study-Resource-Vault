@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image to PDF - Cloud Study Resource Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="brand-icon-box" style="width:34px; height:34px; font-size:1rem;">
+            <i class="fa-solid fa-cloud"></i>
+          </div>
+          <span>Study Vault</span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Academic Portal</div>
+        <a href="dashboard.html" class="nav-item">
+          <i class="fa-solid fa-gauge"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="resources.html" class="nav-item">
+          <i class="fa-solid fa-compass"></i>
+          <span>Browse Resources</span>
+        </a>
+        <a href="admin.html" class="nav-item admin-only">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Admin Portal</span>
+        </a>
+        <a href="add-resource.html" class="nav-item">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span>Add Resource</span>
+        </a>
+        <a href="my-resources.html" class="nav-item">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>My Resources</span>
+        </a>
+        <a href="favorites.html" class="nav-item">
+          <i class="fa-solid fa-star"></i>
+          <span>Favorites</span>
+        </a>
+        <div class="nav-section-title">Tools</div>
+        <a href="image-to-pdf.html" class="nav-item active">
+          <i class="fa-solid fa-file-pdf"></i>
+          <span>Image → PDF</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar-circle">S</div>
+          <div class="user-snippet-info">
+            <div class="user-snippet-name user-display-name">Loading...</div>
+            <div class="user-snippet-role">
+              <span class="badge badge-primary user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">STUDENT</span>
+            </div>
+          </div>
+          <button type="button" class="btn-icon btn-sm logout-trigger-btn" title="Sign Out" style="background:transparent; border-color:var(--sidebar-border); color:#cbd5e1;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="app-header">
+        <div class="header-left">
+          <button class="menu-toggle-btn" id="menuToggle" title="Open Navigation" aria-label="Open navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-title-wrapper">
+            <h2>Student Tools</h2>
+          </div>
+        </div>
+        <div class="header-right">
+          <a href="dashboard.html" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-gauge"></i> Dashboard
+          </a>
+        </div>
+      </header>
+
+      <main class="app-content">
+        <div class="image-pdf-page">
+          <div class="image-pdf-intro">
+            <div>
+              <span class="image-pdf-eyebrow">STUDENT TOOL</span>
+              <h1>Image → PDF</h1>
+              <p class="text-sm text-muted">Convert your images into one PDF directly in your browser.</p>
+            </div>
+            <span class="image-pdf-private-note"><i class="fa-solid fa-shield-halved"></i> Files stay on this device</span>
+          </div>
+
+          <section class="image-pdf-panel image-pdf-upload" id="imageDropzone" aria-label="Select or drop images">
+            <div class="image-pdf-upload-copy">
+              <span class="image-pdf-upload-icon"><i class="fa-solid fa-images"></i></span>
+              <div>
+                <strong>Select images to get started</strong>
+                <p class="text-xs text-muted">JPG, PNG, or WebP. Choose multiple files or drop them here.</p>
+              </div>
+            </div>
+            <input id="imageFiles" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple hidden>
+            <button type="button" class="btn btn-primary" id="selectImagesBtn">
+              <i class="fa-solid fa-plus"></i> Select Images
+            </button>
+          </section>
+
+          <div id="imagePdfStatus" class="image-pdf-status" role="status" aria-live="polite" hidden></div>
+
+          <section class="image-pdf-selection" aria-labelledby="selectedImagesHeading">
+            <div class="image-pdf-section-heading">
+              <h2 id="selectedImagesHeading">Selected Images <span class="badge badge-muted" id="imageCount">0</span></h2>
+              <button type="button" class="btn btn-secondary btn-sm" id="clearImagesBtn" disabled>
+                <i class="fa-solid fa-trash-can"></i> Clear all
+              </button>
+            </div>
+            <div class="image-pdf-empty" id="imageEmptyState">
+              <i class="fa-regular fa-image"></i>
+              <p class="text-sm">Your selected images will appear here.</p>
+            </div>
+            <div class="image-pdf-image-grid" id="imagePreviewGrid" aria-live="polite"></div>
+          </section>
+
+          <section class="image-pdf-panel image-pdf-options" aria-labelledby="pdfOptionsHeading">
+            <h2 id="pdfOptionsHeading">PDF options</h2>
+            <div class="image-pdf-options-grid">
+              <div class="form-group">
+                <label class="form-label" for="pageSize">Page size</label>
+                <select class="form-control" id="pageSize">
+                  <option value="a4-portrait">A4 Portrait</option>
+                  <option value="a4-landscape">A4 Landscape</option>
+                  <option value="original">Original Image Ratio</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="imageQuality">Image quality</label>
+                <select class="form-control" id="imageQuality">
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="standard">Standard</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pageMargins">Margins</label>
+                <select class="form-control" id="pageMargins">
+                  <option value="none">None</option>
+                  <option value="small">Small</option>
+                  <option value="normal" selected>Normal</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <div class="image-pdf-panel image-pdf-actions">
+            <p><i class="fa-solid fa-lock"></i> Conversion happens locally. No images are uploaded.</p>
+            <button type="button" class="btn btn-primary" id="convertImagesBtn" disabled>
+              <i class="fa-solid fa-file-arrow-down"></i> Convert to PDF
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script type="module" src="js/image-to-pdf.js"></script>
+</body>
+</html>

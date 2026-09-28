@@ -77,6 +77,7 @@ Cloud Study Resource Vault/
 ├── add-resource.html       # Admin form to add resources (metadata + file path)
 ├── favorites.html          # Student private bookmarked resources vault
 ├── my-resources.html       # Safe redirect router to Admin Portal or Browse Resources
+├── image-to-pdf.html       # Authenticated browser-only image-to-PDF utility
 │
 ├── resources/              # Physical study material files (PDFs, PPTs, DOCs)
 │   ├── cloud-computing-unit-1.pdf
@@ -99,6 +100,7 @@ Cloud Study Resource Vault/
 │   ├── admin.js            # Admin management table, CRUD modals, and publish toggles
 │   ├── add-resource.js     # Form validation and Firestore document creation
 │   ├── favorites.js        # Bookmarked resources controller
+│   ├── image-to-pdf.js     # Local image previews, ordering, and PDF generation
 │   └── demo-data.js        # 1-Click university sample resources seeder
 │
 ├── firestore.rules         # Security rules: Admin writes, student reads & favorites
@@ -260,5 +262,6 @@ service cloud.firestore {
 - [x] **Dashboard Telemetry**: Live metrics for Total Resources, Published Resources, Subjects, and Units.
 - [x] **Search & Filters**: Instant search across title, subject, unit, description, and file type without page reloads.
 - [x] **Sample College Data**: 1-click seeding button to populate standard curriculum notes.
+- [x] **Image → PDF Tool**: Combine JPG, PNG, and WebP images into a PDF entirely in-browser; no image uploads.
 - [x] **Mobile Responsive**: Fully responsive layout across laptops, tablets, and smartphones.
 - [x] **Strict Tech Stack**: HTML5, CSS3, Vanilla JS, Firebase Auth & Firestore only.
