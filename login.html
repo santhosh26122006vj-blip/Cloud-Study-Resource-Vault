@@ -80,19 +80,14 @@
         </button>
       </form>
 
-      <!-- 1-Click Quick Demo Login Section (Ideal for Testing & Evaluation) -->
+      <!-- 1-Click Quick Student Login Section (Instant Test Access) -->
       <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color); text-align: center;">
         <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; display: block; margin-bottom: 0.75rem;">
-          ⚡ 1-Click Quick Demo Test Logins
+          ⚡ 1-Click Quick Student Login (Instant Access)
         </span>
-        <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
-          <button type="button" class="btn btn-secondary btn-sm" id="quickStudentLoginBtn" style="flex: 1; min-width: 140px; font-size: 0.8rem;">
-            <i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> Student Demo
-          </button>
-          <button type="button" class="btn btn-secondary btn-sm" id="quickAdminLoginBtn" style="flex: 1; min-width: 140px; font-size: 0.8rem;">
-            <i class="fa-solid fa-shield-halved" style="color: var(--warning);"></i> Admin Demo
-          </button>
-        </div>
+        <button type="button" class="btn btn-secondary btn-sm" id="quickStudentLoginBtn" style="width: 100%; font-size: 0.875rem; padding: 0.6rem 1rem;">
+          <i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> One-Click Demo Student Login
+        </button>
       </div>
 
       <div class="auth-footer">
@@ -149,10 +144,10 @@
         const switchBtn = document.getElementById('switchAccountBtn');
 
         if (notice && nameEl) {
-          nameEl.textContent = `${profile.name || profile.email} (${(profile.role || 'student').toUpperCase()})`;
+          nameEl.textContent = `${profile.name || profile.email} (STUDENT)`;
           notice.style.display = 'block';
           if (dashBtn) {
-            dashBtn.href = profile.role === 'admin' ? 'admin.html' : 'dashboard.html';
+            dashBtn.href = 'dashboard.html';
           }
           if (switchBtn) {
             switchBtn.onclick = async () => {
@@ -185,24 +180,16 @@
       await executeLogin('student@studyvault.edu', 'student123');
     });
 
-    // Quick Demo Login: Admin
-    document.getElementById('quickAdminLoginBtn').addEventListener('click', async () => {
-      emailInput.value = 'admin@studyvault.edu';
-      passwordInput.value = 'admin123';
-      await executeLogin('admin@studyvault.edu', 'admin123');
-    });
-
     async function executeLogin(email, password) {
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span class="spinner"></span> Signing In...`;
 
       try {
         const result = await loginUser(email, password);
-        const destination = result.role === 'admin' ? 'admin.html' : 'dashboard.html';
-        showToast("Login Successful", `Welcome back! Redirecting to ${result.role === 'admin' ? 'Admin Portal' : 'Dashboard'}...`, "success");
+        showToast("Login Successful", "Welcome back! Redirecting to Dashboard...", "success");
 
         setTimeout(() => {
-          window.location.href = destination;
+          window.location.href = 'dashboard.html';
         }, 500);
       } catch (err) {
         console.error("Login failure:", err);

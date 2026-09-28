@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // Authentication & ownership helpers
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -11,64 +11,37 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-
-    function isAdmin() {
-      return isAuthenticated() && getUserData().role == 'admin';
-    }
-
     // -------------------------------------------------------------------------
     // USERS COLLECTION
     // -------------------------------------------------------------------------
     match /users/{userId} {
-      // User can read their own profile; Admin can read all user profiles
-      allow read: if isOwner(userId) || isAdmin();
-
-      // New users can create their own document on registration
-      allow create: if isOwner(userId) && request.resource.data.role in ['student', 'admin'];
-
-      // Only admins or the owner can update (students cannot elevate their own role to admin)
-      allow update: if isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
-                    || isAdmin();
-
-      // Only admin can delete user profiles
-      allow delete: if isAdmin();
+      allow read, write: if isOwner(userId);
     }
 
     // -------------------------------------------------------------------------
     // RESOURCES COLLECTION
     // -------------------------------------------------------------------------
     match /resources/{resourceId} {
-      // Any authenticated student/admin can browse and read resources
+      // Any authenticated student can browse and read study resources
       allow read: if isAuthenticated();
 
-      // Authenticated users can create resources attributed to themselves
+      // Students can upload study resources attributed to themselves
       allow create: if isAuthenticated() 
                     && request.resource.data.uploadedBy == request.auth.uid
                     && request.resource.data.title is string
-                    && request.resource.data.subject is string
-                    && request.resource.data.category is string;
+                    && request.resource.data.subject is string;
 
-      // Only the resource author or an admin can update
-      allow update: if isAuthenticated() 
-                    && (resource.data.uploadedBy == request.auth.uid || isAdmin());
-
-      // Only the resource author or an admin can delete
-      allow delete: if isAuthenticated() 
-                    && (resource.data.uploadedBy == request.auth.uid || isAdmin());
+      // Students can update or delete only resources they uploaded
+      allow update, delete: if isAuthenticated() 
+                            && resource.data.uploadedBy == request.auth.uid;
     }
 
     // -------------------------------------------------------------------------
     // FAVORITES COLLECTION
     // -------------------------------------------------------------------------
     match /favorites/{favoriteId} {
-      // Users can only view, add, and remove their own favorites
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow update: if false; // Favorites are immutable: create or delete
+      // Students can only view, add, and remove their own favorites
+      allow read, create, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
   }

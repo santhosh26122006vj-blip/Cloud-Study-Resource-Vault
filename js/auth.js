@@ -81,12 +81,11 @@ export async function registerStudent(name, email, password, confirmPassword) {
 
   // 1. Fallback if Firebase keys are still placeholders
   if (!isConfigured) {
-    const role = email.toLowerCase().includes('admin') ? 'admin' : 'student';
     const demoUser = {
-      uid: "user-" + Date.now(),
+      uid: "student-" + Date.now(),
       name: name,
       email: email,
-      role: role,
+      role: 'student',
       createdAt: new Date().toISOString()
     };
     currentUserProfile = demoUser;
@@ -103,11 +102,10 @@ export async function registerStudent(name, email, password, confirmPassword) {
 
   // Store user record in Firestore
   const userDocRef = doc(db, "users", user.uid);
-  const role = email.toLowerCase().includes('admin') ? 'admin' : 'student';
   const userData = {
     name: name,
     email: email,
-    role: role,
+    role: 'student',
     createdAt: serverTimestamp()
   };
   await setDoc(userDocRef, userData);
@@ -126,18 +124,17 @@ export async function loginUser(email, password) {
 
   // 1. Fallback mode if Firebase keys not configured
   if (!isConfigured) {
-    const role = email.toLowerCase().includes('admin') ? 'admin' : 'student';
     const name = email.split('@')[0].replace(/[._-]/g, ' ');
     const mockUser = {
-      uid: "user-" + (role === 'admin' ? 'admin-123' : 'student-123'),
+      uid: "student-demo-user",
       name: name.charAt(0).toUpperCase() + name.slice(1),
       email: email,
-      role: role,
+      role: 'student',
       createdAt: new Date().toISOString()
     };
     currentUserProfile = mockUser;
     localStorage.setItem('study_vault_mock_user', JSON.stringify(mockUser));
-    return { user: mockUser, role };
+    return { user: mockUser, role: 'student' };
   }
 
   // 2. Real Firebase Auth Login
@@ -146,32 +143,29 @@ export async function loginUser(email, password) {
     userCredential = await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
     // If demo credentials used and account doesn't exist yet in Firebase, auto-provision it!
-    const isDemoAccount = (email === 'student@studyvault.edu' || email === 'admin@studyvault.edu') && password.length >= 6;
+    const isDemoAccount = email === 'student@studyvault.edu' && password.length >= 6;
     if (isDemoAccount && (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential')) {
-      const role = email.includes('admin') ? 'admin' : 'student';
-      const name = role === 'admin' ? 'Administrator' : 'Student Demo';
+      const name = 'Demo Student';
       userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: name });
       try {
         await setDoc(doc(db, "users", userCredential.user.uid), {
           name,
           email,
-          role,
+          role: 'student',
           createdAt: serverTimestamp()
         });
       } catch (e) {
         console.warn("Could not save initial user doc:", e);
       }
-      currentUserProfile = { uid: userCredential.user.uid, name, email, role };
-      return { user: userCredential.user, role };
+      currentUserProfile = { uid: userCredential.user.uid, name, email, role: 'student' };
+      return { user: userCredential.user, role: 'student' };
     }
     throw error;
   }
 
   const user = userCredential.user;
-
-  // Fetch role from Firestore with a fast fallback timeout
-  let role = 'student';
+  const role = 'student';
   try {
     const rolePromise = getDoc(doc(db, "users", user.uid));
     const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500));
@@ -269,7 +263,7 @@ export async function fetchUserProfile(uid) {
 // ============================================================================
 // ROUTE GUARDS & AUTH STATE DETECTOR
 // ============================================================================
-export function initAuthGuard(options = { requireAuth: true, requireAdmin: false, publicOnly: false }, onUserReady = null) {
+export function initAuthGuard(options = { requireAuth: true, publicOnly: false }, onUserReady = null) {
   // If not configured, check mock user
   if (!isConfigured) {
     const raw = localStorage.getItem('study_vault_mock_user');
@@ -287,13 +281,7 @@ export function initAuthGuard(options = { requireAuth: true, requireAdmin: false
       return;
     }
 
-    if (options.requireAdmin && mockUser?.role !== 'admin') {
-      showToast("Access Restricted", "Admin privileges required. Redirecting to student dashboard.", "error");
-      setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
-      return;
-    }
-
-    updateNavbarUser(mockUser || { name: 'Demo User', role: 'student' });
+    updateNavbarUser(mockUser || { name: 'Demo Student', role: 'student' });
     if (onUserReady) onUserReady(mockUser);
     return;
   }
@@ -317,15 +305,6 @@ export function initAuthGuard(options = { requireAuth: true, requireAdmin: false
       }
 
       const profile = await fetchUserProfile(user.uid);
-
-      if (options.requireAdmin && profile.role !== 'admin') {
-        showToast("Access Denied", "Administrator access only. Redirecting to student dashboard.", "error");
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 800);
-        return;
-      }
-
       updateNavbarUser(profile);
       if (onUserReady) onUserReady(profile, user);
     } else {
@@ -345,17 +324,10 @@ function updateNavbarUser(profile) {
 
   const roleEls = document.querySelectorAll('.user-display-role');
   roleEls.forEach(el => {
-    const roleText = (profile.role || 'student').toUpperCase();
-    el.textContent = roleText;
-    if (profile.role === 'admin') {
-      el.className = 'badge badge-warning user-display-role';
-      el.style.fontSize = '0.65rem';
-      el.style.padding = '0.15rem 0.45rem';
-    } else {
-      el.className = 'badge badge-primary user-display-role';
-      el.style.fontSize = '0.65rem';
-      el.style.padding = '0.15rem 0.45rem';
-    }
+    el.textContent = 'STUDENT';
+    el.className = 'badge badge-primary user-display-role';
+    el.style.fontSize = '0.65rem';
+    el.style.padding = '0.15rem 0.45rem';
   });
 
   const avatarEls = document.querySelectorAll('.user-avatar-circle');
