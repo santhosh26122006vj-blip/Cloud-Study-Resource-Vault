@@ -37,11 +37,7 @@
           <i class="fa-solid fa-compass"></i>
           <span>Browse Resources</span>
         </a>
-        <a href="admin.html" class="nav-item">
-          <i class="fa-solid fa-shield-halved"></i>
-          <span>Admin Portal</span>
-        </a>
-        <a href="add-resource.html" class="nav-item active">
+<a href="add-resource.html" class="nav-item active">
           <i class="fa-solid fa-plus-circle"></i>
           <span>Upload Resource</span>
         </a>
@@ -53,12 +49,9 @@
 
       <div class="sidebar-footer">
         <div class="user-snippet">
-          <div class="user-avatar-circle" style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);">A</div>
+          <div class="user-avatar-circle">A</div>
           <div class="user-snippet-info">
-            <div class="user-snippet-name user-display-name">Student / Administrator</div>
-            <div class="user-snippet-role">
-              <span class="badge badge-warning user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">USER</span>
-            </div>
+            <div class="user-snippet-name user-display-name">Student</div>
           </div>
           <button type="button" class="btn-icon btn-sm logout-trigger-btn" title="Sign Out" style="background:transparent; border-color:var(--sidebar-border); color:#cbd5e1;">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -81,10 +74,7 @@
         </div>
 
         <div class="header-right">
-          <a href="admin.html" class="btn btn-secondary btn-sm">
-            <i class="fa-solid fa-shield-halved"></i> Admin Portal
-          </a>
-          <a href="resources.html" class="btn btn-secondary btn-sm">
+<a href="resources.html" class="btn btn-secondary btn-sm">
             <i class="fa-solid fa-compass"></i> View Resources
           </a>
         </div>
@@ -113,10 +103,7 @@
               <a href="resources.html" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-compass"></i> View in Browse
               </a>
-              <a href="admin.html" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-shield-halved"></i> Admin Portal
-              </a>
-              <button type="button" class="btn btn-secondary btn-sm" id="uploadAnotherBtn">
+<button type="button" class="btn btn-secondary btn-sm" id="uploadAnotherBtn">
                 <i class="fa-solid fa-plus"></i> Add Another Resource
               </button>
             </div>
@@ -128,11 +115,8 @@
             <div style="margin-bottom: 1.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
               <div>
                 <h3 style="font-size: 1.35rem; margin-bottom: 0.25rem;">Upload New Study Resource</h3>
-                <p class="text-sm text-muted">Complete study resource registration form for Cloud Firestore</p>
+                <p class="text-sm text-muted">Share a study resource with your classmates</p>
               </div>
-              <span class="badge badge-warning" style="font-size:0.75rem; padding:0.25rem 0.6rem;">
-                <i class="fa-solid fa-lock"></i> USER ACCESS
-              </span>
             </div>
 
             <form id="addResourceForm" novalidate>
@@ -225,23 +209,12 @@
                     <option value="Other">Other</option>
                   </select>
                 </div>
-              </div>
-
-              <!-- Published Status (Checkbox) -->
-              <div class="form-group" style="background:var(--bg-surface-secondary); padding:0.85rem 1rem; border-radius:var(--border-radius-md); border:1px solid var(--border-color); display:flex; align-items:center; gap:0.75rem;">
-                <input type="checkbox" id="resourcePublished" style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;" checked>
-                <label for="resourcePublished" style="margin:0; font-size:0.9rem; font-weight:600; cursor:pointer;">
-                  Published (Visible to students immediately)
-                </label>
-              </div>
-
-              <!-- Submit Buttons -->
+              </div><!-- Submit Buttons -->
               <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                 <button type="submit" class="btn btn-primary" id="submitResourceBtn" style="flex: 1; padding: 0.75rem 1.5rem; font-size: 1rem;">
                   <i class="fa-solid fa-plus-circle"></i> ADD RESOURCE
                 </button>
-                <a href="admin.html" class="btn btn-secondary">Cancel</a>
-              </div>
+</div>
             </form>
 
           </div>

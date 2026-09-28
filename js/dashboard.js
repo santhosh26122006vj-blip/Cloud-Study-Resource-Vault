@@ -1,6 +1,6 @@
 /**
  * Dashboard Controller
- * Displays dynamic statistics (Total Resources, Published Resources, Subjects, Units),
+ * Displays dynamic statistics (Total Resources, Subjects, Units),
  * quick shortcuts, recently added study materials, and direct resource access.
  * Spark plan compatible: Zero Firebase Storage dependency.
  */
@@ -9,7 +9,6 @@ import { initAuthGuard } from './auth.js';
 import { initSidebar, showToast, renderResourceDetailModal, formatDate, getTypeBadge, escapeHTML } from './ui.js';
 import { getDashboardStats, getRecentlyAddedResources, getUserFavoriteIds, toggleFavorite, incrementDownloadCount } from './resource-service.js';
 import { openStudyResource } from './file-storage.js';
-import { seedDemoData } from './demo-data.js';
 
 let currentUser = null;
 let userFavoriteIds = new Set();
@@ -18,11 +17,11 @@ let recentResources = [];
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
 
-  initAuthGuard({ requireAuth: true, requireAdmin: false }, async (profile) => {
+  initAuthGuard({ requireAuth: true }, async (profile) => {
     currentUser = profile;
     const greetingEl = document.getElementById('welcomeGreeting');
     if (greetingEl) {
-      greetingEl.textContent = `Welcome back, ${profile.name || (profile.role === 'admin' ? 'Administrator' : 'Student')} 👋`;
+      greetingEl.textContent = `Welcome back, ${profile.name || 'Student'} 👋`;
     }
 
     await loadDashboardData();
@@ -46,30 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dashSearchBtn) {
     dashSearchBtn.addEventListener('click', handleSearch);
   }
-
-  // Seed demo data button
-  const seedBtn = document.getElementById('seedDemoDataBtn');
-  if (seedBtn) {
-    seedBtn.addEventListener('click', async () => {
-      seedBtn.disabled = true;
-      seedBtn.innerHTML = `<span class="spinner"></span> Seeding...`;
-      await seedDemoData(currentUser);
-      await loadDashboardData();
-      seedBtn.disabled = false;
-      seedBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> Load Demo College Resources`;
-    });
-  }
 });
 
 async function loadDashboardData() {
   try {
-    const isAdmin = currentUser?.role === 'admin';
-
     // 1. Fetch Stats & Favorites concurrently
     const [stats, favIds, recents] = await Promise.all([
       getDashboardStats(currentUser?.uid),
       getUserFavoriteIds(currentUser?.uid),
-      getRecentlyAddedResources(6, !isAdmin)
+      getRecentlyAddedResources(6, false)
     ]);
 
     userFavoriteIds = favIds;
@@ -77,12 +61,12 @@ async function loadDashboardData() {
 
     // Update Telemetry Elements
     const elTotal = document.getElementById('statTotalResources');
-    const elPub = document.getElementById('statPublishedResources');
+    const elPub = document.getElementById('statAvailableResources');
     const elSub = document.getElementById('statTotalSubjects');
     const elUnits = document.getElementById('statTotalUnits');
 
     if (elTotal) elTotal.textContent = stats.totalResources;
-    if (elPub) elPub.textContent = stats.publishedResources;
+    if (elPub) elPub.textContent = stats.availableResources;
     if (elSub) elSub.textContent = stats.totalSubjects;
     if (elUnits) elUnits.textContent = stats.totalUnits;
 

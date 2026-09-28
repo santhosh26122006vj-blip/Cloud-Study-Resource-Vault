@@ -46,48 +46,32 @@ function saveMockFavorites(list) {
 // ============================================================================
 // FETCH RESOURCES
 // ============================================================================
-export async function getAllResources(onlyPublished = false) {
-  if (!isConfigured) {
-    const list = getMockResources();
-    return onlyPublished ? list.filter(r => r.isPublished !== false) : list;
-  }
+export async function getAllResources() {
+  if (!isConfigured) return getMockResources();
 
   try {
-    let q;
-    if (onlyPublished) {
-      q = query(collection(db, "resources"), where("isPublished", "==", true));
-    } else {
-      q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
-    }
+    const q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.warn("Ordered query fallback for resources:", error);
+    const snapshot = await getDocs(collection(db, "resources"));
     const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     return list.sort((a, b) => {
       const tA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
       const tB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
       return tB - tA;
     });
-  } catch (error) {
-    console.warn("Unordered query fallback for resources:", error);
-    const snapshot = await getDocs(collection(db, "resources"));
-    let list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (onlyPublished) {
-      list = list.filter(r => r.isPublished !== false);
-    }
-    return list.sort((a, b) => {
-      const tA = a.createdAt?.seconds || 0;
-      const tB = b.createdAt?.seconds || 0;
-      return tB - tA;
-    });
   }
 }
 
-export async function getRecentlyAddedResources(max = 6, onlyPublished = true) {
-  const all = await getAllResources(onlyPublished);
+export async function getRecentlyAddedResources(max = 6) {
+  const all = await getAllResources();
   return all.slice(0, max);
 }
 
 export async function getUserResources(userId) {
-  const all = await getAllResources(false);
+  const all = await getAllResources();
   return all.filter(r => r.uploadedBy === userId);
 }
 
@@ -178,7 +162,6 @@ export async function createResource({
   fileUrl = '',
   fileType = 'PDF',
   file = null,
-  isPublished = true,
   currentUser
 }) {
   if (!title || !title.trim()) {
@@ -226,7 +209,7 @@ export async function createResource({
   }
 
   const uploaderId = currentUser?.uid || "user-system";
-  const uploaderName = currentUser?.name || currentUser?.displayName || (currentUser?.role === 'admin' ? "Administrator" : "Student");
+  const uploaderName = currentUser?.name || currentUser?.displayName || "Student";
 
   const resourceData = {
     title: title.trim(),
@@ -242,7 +225,6 @@ export async function createResource({
     uploaderName: uploaderName,
     createdAt: isConfigured ? serverTimestamp() : new Date().toISOString(),
     downloadCount: 0,
-    isPublished: isPublished !== false
   };
 
   // Mock mode fallback
@@ -306,15 +288,6 @@ export async function updateResource(resourceId, updatedData) {
 }
 
 // ============================================================================
-// TOGGLE PUBLICATION STATUS
-// ============================================================================
-export async function togglePublishStatus(resourceId, currentStatus) {
-  const newStatus = !currentStatus;
-  await updateResource(resourceId, { isPublished: newStatus });
-  return newStatus;
-}
-
-// ============================================================================
 // INCREMENT DOWNLOAD / OPEN COUNT
 // ============================================================================
 export async function incrementDownloadCount(resourceId, currentCount = 0) {
@@ -359,11 +332,10 @@ export async function deleteResource(resourceId) {
 }
 
 // ============================================================================
-// DASHBOARD & ADMIN METRICS
+// DASHBOARD METRICS
 // ============================================================================
 export async function getDashboardStats(userId = null) {
   const allResources = await getAllResources(false);
-  const published = allResources.filter(r => r.isPublished !== false);
   
   // Count unique subjects & units
   const subjects = new Set(allResources.map(r => r.subject).filter(Boolean));
@@ -377,7 +349,7 @@ export async function getDashboardStats(userId = null) {
 
   return {
     totalResources: allResources.length,
-    publishedResources: published.length,
+    availableResources: allResources.length,
     totalSubjects: subjects.size,
     totalUnits: units.size,
     favorites: favCount
