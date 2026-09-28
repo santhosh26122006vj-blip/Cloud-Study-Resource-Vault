@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Resources - Cloud Study Resource Vault</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="brand-icon-box" style="width:34px; height:34px; font-size:1rem;">
+            <i class="fa-solid fa-cloud"></i>
+          </div>
+          <span>Study Vault</span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Academic Portal</div>
+        <a href="dashboard.html" class="nav-item">
+          <i class="fa-solid fa-gauge"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="resources.html" class="nav-item">
+          <i class="fa-solid fa-compass"></i>
+          <span>Browse Resources</span>
+        </a>
+        <a href="add-resource.html" class="nav-item">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Add Resource</span>
+        </a>
+        <a href="my-resources.html" class="nav-item active">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>My Resources</span>
+        </a>
+        <a href="favorites.html" class="nav-item">
+          <i class="fa-solid fa-star"></i>
+          <span>Favorites</span>
+        </a>
+
+        <div class="nav-section-title">Administration</div>
+        <a href="admin.html" class="nav-item">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Admin Portal</span>
+        </a>
+
+        <div class="nav-section-title">Overview</div>
+        <a href="index.html" class="nav-item">
+          <i class="fa-solid fa-house"></i>
+          <span>Landing Page</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar-circle">S</div>
+          <div class="user-snippet-info">
+            <div class="user-snippet-name user-display-name">Loading...</div>
+            <div class="user-snippet-role">
+              <span class="badge badge-primary user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">STUDENT</span>
+            </div>
+          </div>
+          <button type="button" class="btn-icon btn-sm logout-trigger-btn" title="Sign Out" style="background:transparent; border-color:var(--sidebar-border); color:#cbd5e1;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="menu-toggle-btn" id="menuToggle" title="Open Navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-title-wrapper">
+            <h2>My Uploaded Resources</h2>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <a href="add-resource.html" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload New
+          </a>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="app-content">
+        <!-- Sub-header bar -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <p class="text-sm text-muted">Manage, edit or delete study resources authored by your student account.</p>
+          </div>
+          <div>
+            <span class="badge badge-primary" id="myResourcesCount">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Resources Grid -->
+        <div class="resources-grid" id="myResourcesGrid">
+          <div class="resource-card skeleton" style="height: 270px;"></div>
+          <div class="resource-card skeleton" style="height: 270px;"></div>
+          <div class="resource-card skeleton" style="height: 270px;"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Edit Resource Modal -->
+  <div class="modal-overlay" id="editResourceModal">
+    <div class="modal-container" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3>Edit Study Resource</h3>
+        <i class="fa-solid fa-xmark modal-close-btn" id="closeEditModalBtn"></i>
+      </div>
+      <div class="modal-body">
+        <form id="editResourceForm" novalidate>
+          <div class="form-group">
+            <label for="editTitle" class="form-label">Resource Title <span class="required">*</span></label>
+            <input type="text" id="editTitle" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="editDescription" class="form-label">Description</label>
+            <textarea id="editDescription" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="editSubject" class="form-label">Subject</label>
+              <select id="editSubject" class="form-control">
+                <option value="Cloud Computing">Cloud Computing</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Database Management Systems">Database Management Systems</option>
+                <option value="Computer Networks">Computer Networks</option>
+                <option value="Java Programming">Java Programming</option>
+                <option value="Software Engineering">Software Engineering</option>
+                <option value="Operating Systems">Operating Systems</option>
+                <option value="Data Structures">Data Structures</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="editCategory" class="form-label">Category</label>
+              <select id="editCategory" class="form-control">
+                <option value="Notes">Notes</option>
+                <option value="Question Papers">Question Papers</option>
+                <option value="Assignments">Assignments</option>
+                <option value="Presentations">Presentations</option>
+                <option value="E-books">E-books</option>
+                <option value="Lab Materials">Lab Materials</option>
+                <option value="Reference Materials">Reference Materials</option>
+                <option value="Useful Links">Useful Links</option>
+                <option value="YouTube Resources">YouTube Resources</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="editSemester" class="form-label">Semester</label>
+              <select id="editSemester" class="form-control">
+                <option value="Semester 1">Semester 1</option>
+                <option value="Semester 2">Semester 2</option>
+                <option value="Semester 3">Semester 3</option>
+                <option value="Semester 4">Semester 4</option>
+                <option value="Semester 5">Semester 5</option>
+                <option value="Semester 6">Semester 6</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="editType" class="form-label">Resource Type</label>
+              <select id="editType" class="form-control">
+                <option value="PDF">PDF</option>
+                <option value="Document">Document</option>
+                <option value="Presentation">Presentation</option>
+                <option value="Image">Image</option>
+                <option value="Video">Video</option>
+                <option value="Website">Website</option>
+                <option value="YouTube Link">YouTube Link</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editTags" class="form-label">Tags</label>
+            <input type="text" id="editTags" class="form-control" placeholder="Comma separated tags">
+          </div>
+
+          <div class="form-group">
+            <label for="editExternalUrl" class="form-label">External Resource URL</label>
+            <input type="url" id="editExternalUrl" class="form-control" placeholder="Optional external link">
+          </div>
+
+          <div class="form-group">
+            <label for="editFileInput" class="form-label">Replace Uploaded File (Optional)</label>
+            <input type="file" id="editFileInput" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png">
+            <span class="form-hint">Leave blank to keep current file</span>
+          </div>
+
+          <div class="modal-footer" style="padding-left:0; padding-right:0; padding-bottom:0;">
+            <button type="button" class="btn btn-secondary btn-sm" id="cancelEditBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="saveEditBtn">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resource Detail Modal Container -->
+  <div id="resourceDetailModal" class="modal-overlay"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/my-resources.js"></script>
+</body>
+</html>

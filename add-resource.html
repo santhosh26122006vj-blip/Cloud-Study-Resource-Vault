@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Resource - Cloud Study Resource Vault</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="brand-icon-box" style="width:34px; height:34px; font-size:1rem;">
+            <i class="fa-solid fa-cloud"></i>
+          </div>
+          <span>Study Vault</span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Academic Portal</div>
+        <a href="dashboard.html" class="nav-item">
+          <i class="fa-solid fa-gauge"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="resources.html" class="nav-item">
+          <i class="fa-solid fa-compass"></i>
+          <span>Browse Resources</span>
+        </a>
+        <a href="add-resource.html" class="nav-item active">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Add Resource</span>
+        </a>
+        <a href="my-resources.html" class="nav-item">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>My Resources</span>
+        </a>
+        <a href="favorites.html" class="nav-item">
+          <i class="fa-solid fa-star"></i>
+          <span>Favorites</span>
+        </a>
+
+        <div class="nav-section-title">Administration</div>
+        <a href="admin.html" class="nav-item">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Admin Portal</span>
+        </a>
+
+        <div class="nav-section-title">Overview</div>
+        <a href="index.html" class="nav-item">
+          <i class="fa-solid fa-house"></i>
+          <span>Landing Page</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar-circle">S</div>
+          <div class="user-snippet-info">
+            <div class="user-snippet-name user-display-name">Loading...</div>
+            <div class="user-snippet-role">
+              <span class="badge badge-primary user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">STUDENT</span>
+            </div>
+          </div>
+          <button type="button" class="btn-icon btn-sm logout-trigger-btn" title="Sign Out" style="background:transparent; border-color:var(--sidebar-border); color:#cbd5e1;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="menu-toggle-btn" id="menuToggle" title="Open Navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-title-wrapper">
+            <h2>Upload Study Material</h2>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <a href="resources.html" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Back to Browse
+          </a>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="app-content">
+        <div style="max-width: 800px; margin: 0 auto;">
+
+          <!-- Success Alert Banner (Initially hidden) -->
+          <div id="uploadSuccessBanner" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:var(--border-radius-lg); padding:1.5rem; margin-bottom:2rem; text-align:center;">
+            <div style="width:48px; height:48px; border-radius:50%; background:#d1fae5; color:var(--success); display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin:0 auto 1rem auto;">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 style="color:#065f46; font-size:1.35rem; margin-bottom:0.4rem;">Resource uploaded successfully!</h3>
+            <p style="color:#047857; font-size:0.9rem; margin-bottom:1.25rem;">Your study resource has been stored securely in Firebase Storage & Cloud Firestore.</p>
+            <div style="display:flex; justify-content:center; gap:0.75rem;">
+              <a href="#" id="viewUploadedResourceLink" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-eye"></i> View Resource
+              </a>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('uploadSuccessBanner').style.display='none'">
+                Upload Another
+              </button>
+            </div>
+          </div>
+
+          <!-- Form Card -->
+          <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--border-radius-xl); padding:2rem 2.5rem; box-shadow:var(--shadow-sm);">
+            
+            <div style="margin-bottom: 2rem;">
+              <h3 style="font-size: 1.35rem; margin-bottom: 0.35rem;">Add Resource to Cloud Vault</h3>
+              <p class="text-sm text-muted">Contribute lecture notes, question papers, syllabus presentations, or reference web links.</p>
+            </div>
+
+            <form id="addResourceForm" novalidate>
+              <!-- Resource Title -->
+              <div class="form-group">
+                <label for="resourceTitle" class="form-label">Resource Title <span class="required">*</span></label>
+                <input type="text" id="resourceTitle" class="form-control" placeholder="e.g. Cloud Computing Unit 1 Lecture Notes & Architecture" required>
+              </div>
+
+              <!-- Description -->
+              <div class="form-group">
+                <label for="resourceDescription" class="form-label">Description</label>
+                <textarea id="resourceDescription" class="form-control" placeholder="Brief summary of topics covered in this material..."></textarea>
+              </div>
+
+              <!-- Subject & Category (2-col grid) -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+                <div class="form-group">
+                  <label for="resourceSubject" class="form-label">Subject <span class="required">*</span></label>
+                  <select id="resourceSubject" class="form-control" required>
+                    <option value="" disabled selected>Select Subject</option>
+                    <option value="Cloud Computing">Cloud Computing</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Database Management Systems">Database Management Systems</option>
+                    <option value="Computer Networks">Computer Networks</option>
+                    <option value="Java Programming">Java Programming</option>
+                    <option value="Software Engineering">Software Engineering</option>
+                    <option value="Operating Systems">Operating Systems</option>
+                    <option value="Data Structures">Data Structures</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="resourceCategory" class="form-label">Category <span class="required">*</span></label>
+                  <select id="resourceCategory" class="form-control" required>
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="Notes">Notes</option>
+                    <option value="Question Papers">Question Papers</option>
+                    <option value="Assignments">Assignments</option>
+                    <option value="Presentations">Presentations</option>
+                    <option value="E-books">E-books</option>
+                    <option value="Lab Materials">Lab Materials</option>
+                    <option value="Reference Materials">Reference Materials</option>
+                    <option value="Useful Links">Useful Links</option>
+                    <option value="YouTube Resources">YouTube Resources</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Semester & Resource Type (2-col grid) -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+                <div class="form-group">
+                  <label for="resourceSemester" class="form-label">Semester</label>
+                  <select id="resourceSemester" class="form-control">
+                    <option value="Semester 1">Semester 1</option>
+                    <option value="Semester 2">Semester 2</option>
+                    <option value="Semester 3">Semester 3</option>
+                    <option value="Semester 4">Semester 4</option>
+                    <option value="Semester 5" selected>Semester 5</option>
+                    <option value="Semester 6">Semester 6</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="resourceType" class="form-label">Resource Type</label>
+                  <select id="resourceType" class="form-control">
+                    <option value="PDF" selected>PDF</option>
+                    <option value="Document">Document (DOC/DOCX)</option>
+                    <option value="Presentation">Presentation (PPT/PPTX)</option>
+                    <option value="Image">Image (JPG/PNG)</option>
+                    <option value="Video">Video</option>
+                    <option value="Website">Website</option>
+                    <option value="YouTube Link">YouTube Link</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Tags -->
+              <div class="form-group">
+                <label for="resourceTags" class="form-label">Tags</label>
+                <input type="text" id="resourceTags" class="form-control" placeholder="e.g. Cloud, Virtualization, AWS, Exam Prep (comma separated)">
+                <span class="form-hint">Separate keywords with commas for powerful search discovery</span>
+              </div>
+
+              <!-- File Upload Dropzone -->
+              <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label">Study Material File (Firebase Storage)</label>
+                
+                <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png">
+
+                <div class="upload-dropzone" id="uploadDropzone">
+                  <div class="upload-icon">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                  </div>
+                  <div>
+                    <strong style="font-size: 1rem;">Choose a file or drag & drop it here</strong>
+                    <p class="text-xs text-muted" style="margin-top: 0.25rem;">Supported: PDF, DOC, DOCX, PPT, PPTX, JPG, PNG (Max 30MB)</p>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" style="pointer-events: none;">
+                    Browse File
+                  </button>
+                </div>
+
+                <!-- Preview container -->
+                <div id="filePreviewContainer"></div>
+              </div>
+
+              <!-- External URL (Optional) -->
+              <div class="form-group" style="margin-top: 1rem;">
+                <label for="externalUrl" class="form-label">External Resource URL (Optional)</label>
+                <div class="input-icon-wrapper">
+                  <i class="fa-solid fa-link"></i>
+                  <input type="url" id="externalUrl" class="form-control" placeholder="https://youtube.com/watch?v=... or https://drive.google.com/...">
+                </div>
+                <span class="form-hint">For video lectures, GitHub repositories, or external cloud links</span>
+              </div>
+
+              <!-- Live Upload Progress -->
+              <div id="uploadProgressWrapper" style="display: none; margin: 1.5rem 0;">
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.35rem;">
+                  <span id="uploadProgressText" style="font-weight:600; color:var(--primary);">Uploading to Cloud Storage: 0%</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" id="uploadProgressBar"></div>
+                </div>
+              </div>
+
+              <!-- Submit Buttons -->
+              <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" id="submitResourceBtn" style="flex: 1;">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource
+                </button>
+                <a href="resources.html" class="btn btn-secondary">Cancel</a>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/add-resource.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Cloud Study Resource Vault</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="auth-page-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <a href="index.html" class="brand-icon-box">
+          <i class="fa-solid fa-cloud"></i>
+        </a>
+        <h1>Welcome Back</h1>
+        <p class="text-sm text-muted">Sign in to access your cloud study vault</p>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <!-- Email -->
+        <div class="form-group">
+          <label for="loginEmail" class="form-label">Email Address</label>
+          <div class="input-icon-wrapper">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" id="loginEmail" class="form-control" placeholder="student@college.edu" required autocomplete="email">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <div class="form-label">
+            <label for="loginPassword">Password</label>
+            <button type="button" id="forgotPasswordBtn" style="font-size:0.8rem; color:var(--primary); font-weight:600; cursor:pointer;">
+              Forgot Password?
+            </button>
+          </div>
+          <div class="input-icon-wrapper">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary" id="loginSubmitBtn" style="width: 100%; margin-top: 0.5rem;">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Vault
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account yet? 
+        <a href="register.html" style="font-weight: 700;">Create Account</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div class="modal-overlay" id="forgotPasswordModal">
+    <div class="modal-container" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>Reset Password</h3>
+        <i class="fa-solid fa-xmark modal-close-btn" id="closeForgotModal"></i>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Enter your registered email address and we'll send a password reset link directly from Firebase Authentication.
+        </p>
+        <div class="form-group">
+          <label for="resetEmail" class="form-label">Email Address</label>
+          <div class="input-icon-wrapper">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" id="resetEmail" class="form-control" placeholder="student@college.edu">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="cancelResetBtn">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="sendResetBtn">
+          <i class="fa-regular fa-paper-plane"></i> Send Reset Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { initAuthGuard, loginUser, resetPassword, getFriendlyErrorMessage } from './js/auth.js';
+    import { showToast } from './js/ui.js';
+
+    // If user is already logged in, redirect them away from login page
+    initAuthGuard({ requireAuth: false, publicOnly: true });
+
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('loginSubmitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        showToast("Validation Error", "Please provide both your email and password.", "error");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="spinner"></span> Signing In...`;
+
+      try {
+        const result = await loginUser(email, password);
+        showToast("Login Successful", "Welcome back! Redirecting...", "success");
+
+        setTimeout(() => {
+          if (result && result.role === 'admin') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        }, 800);
+      } catch (err) {
+        console.error("Login failure:", err);
+        showToast("Login Failed", getFriendlyErrorMessage(err), "error");
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Vault`;
+      }
+    });
+
+    // Forgot Password Handling
+    const forgotModal = document.getElementById('forgotPasswordModal');
+    const forgotBtn = document.getElementById('forgotPasswordBtn');
+    const closeForgot = document.getElementById('closeForgotModal');
+    const cancelForgot = document.getElementById('cancelResetBtn');
+    const sendReset = document.getElementById('sendResetBtn');
+    const resetInput = document.getElementById('resetEmail');
+
+    forgotBtn.onclick = () => {
+      resetInput.value = document.getElementById('loginEmail').value.trim();
+      forgotModal.classList.add('active');
+    };
+
+    const hideForgot = () => forgotModal.classList.remove('active');
+    closeForgot.onclick = hideForgot;
+    cancelForgot.onclick = hideForgot;
+
+    sendReset.onclick = async () => {
+      const email = resetInput.value.trim();
+      if (!email) {
+        showToast("Input Required", "Please enter your registered email address.", "error");
+        return;
+      }
+
+      sendReset.disabled = true;
+      sendReset.innerHTML = `<span class="spinner"></span> Sending...`;
+
+      try {
+        await resetPassword(email);
+        showToast("Email Sent", "A password reset link has been dispatched to your email address.", "success");
+        hideForgot();
+      } catch (error) {
+        showToast("Reset Failed", getFriendlyErrorMessage(error), "error");
+      } finally {
+        sendReset.disabled = false;
+        sendReset.innerHTML = `<i class="fa-regular fa-paper-plane"></i> Send Reset Link`;
+      }
+    };
+  </script>
+</body>
+</html>
