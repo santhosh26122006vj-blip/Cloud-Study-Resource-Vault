@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Study Resource Vault - Centralized Academic Cloud Platform</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    if (window.location.protocol === 'file:') {
+      document.addEventListener('DOMContentLoaded', function() {
+        var banner = document.createElement('div');
+        banner.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:#fef2f2;color:#991b1b;border-bottom:2px solid #ef4444;padding:0.85rem 1.5rem;z-index:999999;font-family:sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;';
+        banner.innerHTML = '<div style="display:flex;align-items:center;gap:0.6rem;"><span style="font-size:1.3rem;">⚠️</span><div><strong style="font-size:0.9rem;">Browser Security Notice (file:/// protocol):</strong><span style="font-size:0.8rem;display:block;">Browsers block JavaScript modules on local file paths. To make login and buttons work, run via <strong>start.bat</strong> or host on <strong>GitHub Pages</strong>!</span></div></div><div style="background:#dc2626;color:#fff;padding:0.4rem 0.8rem;border-radius:6px;font-weight:700;font-size:0.8rem;">👉 Double-click start.bat in this folder</div>';
+        document.body.prepend(banner);
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Top Public Navigation -->
+  <header class="public-navbar">
+    <div class="public-navbar-container">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon-box">
+          <i class="fa-solid fa-cloud"></i>
+        </div>
+        <span>Study Vault</span>
+      </a>
+
+      <nav style="display: flex; align-items: center; gap: 1rem;">
+        <a href="#features" class="btn btn-secondary btn-sm" style="border: none; box-shadow: none;">Features</a>
+        <a href="#architecture" class="btn btn-secondary btn-sm" style="border: none; box-shadow: none;">Cloud Arch</a>
+        <a href="login.html" class="btn btn-secondary btn-sm">Login</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-cloud-bolt"></i> College Cloud Computing Project
+      </div>
+      <h1 class="hero-title">
+        Cloud Study <span>Resource Vault</span>
+      </h1>
+      <p class="hero-subtitle">
+        Store, organize and access your academic resources securely in the cloud. A centralized cloud platform designed for modern students and educators.
+      </p>
+      <div class="hero-actions">
+        <a href="register.html" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-rocket"></i> Get Started
+        </a>
+        <a href="login.html" class="btn btn-secondary btn-lg" style="background: rgba(255, 255, 255, 0.15); color: #fff; border-color: rgba(255, 255, 255, 0.3);">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Login to Vault
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="landing-section" id="features">
+    <div class="section-header">
+      <div class="section-tag">Powerful Capabilities</div>
+      <h2>Engineered for Seamless Academic Collaboration</h2>
+      <p>Built with enterprise-grade cloud primitives to ensure lightning-fast access, ironclad security, and effortless resource sharing.</p>
+    </div>
+
+    <div class="features-grid">
+      <!-- Feature 1 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper" style="background: var(--primary-light); color: var(--primary);">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+        <h3>Cloud Storage</h3>
+        <p>Direct integration with Firebase Storage ensures resilient, high-speed multi-part file uploads for PDFs, PPTs, DOCs, and lecture notes.</p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper" style="background: var(--secondary-light); color: var(--secondary);">
+          <i class="fa-solid fa-folder-tree"></i>
+        </div>
+        <h3>Easy Resource Management</h3>
+        <p>Curate, categorize, edit, and organize study materials categorized by subject, academic semester, and content type.</p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper" style="background: var(--info-bg); color: var(--info);">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <h3>Powerful Search & Filter</h3>
+        <p>Instantly retrieve question papers, lecture slides, and notes using multi-attribute search across tags, titles, and categories.</p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper" style="background: var(--success-bg); color: var(--success);">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3>Secure Authentication</h3>
+        <p>Enterprise-grade user identity with Firebase Authentication, encrypted credential verification, and role-based access control.</p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper" style="background: var(--warning-bg); color: var(--warning);">
+          <i class="fa-solid fa-star"></i>
+        </div>
+        <h3>Personalized Favorites</h3>
+        <p>Bookmark high-priority exam question banks and notes to your private cloud vault for 1-click revision access.</p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper" style="background: #fce7f3; color: #db2777;">
+          <i class="fa-solid fa-laptop-file"></i>
+        </div>
+        <h3>Anywhere Cloud Access</h3>
+        <p>Fully responsive, zero-install cloud application optimized across laptops, tablets, and smartphones without data loss.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="landing-section" style="background: var(--bg-surface); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); max-width: 100%;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div class="section-header">
+        <div class="section-tag">Workflow</div>
+        <h2>How It Works</h2>
+        <p>Four simple steps to digitize your college study resources in the cloud.</p>
+      </div>
+
+      <div class="steps-container">
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h4 style="margin-bottom: 0.5rem;">Create Account</h4>
+          <p class="text-sm text-muted">Register with your college email. Secure cloud authentication manages your session tokens.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h4 style="margin-bottom: 0.5rem;">Upload Resources</h4>
+          <p class="text-sm text-muted">Drag and drop lecture PDFs, past papers, or link educational YouTube tutorials.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h4 style="margin-bottom: 0.5rem;">Organize & Search</h4>
+          <p class="text-sm text-muted">Filter by subject (e.g. Cloud Computing), semester, and tags to find exactly what you need.</p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h4 style="margin-bottom: 0.5rem;">Access Anywhere</h4>
+          <p class="text-sm text-muted">Download, preview, and bookmark study resources from any device before exams.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cloud Computing Architecture Section (College Assignment Highlight) -->
+  <section class="landing-section" id="architecture">
+    <div class="cloud-architecture-box">
+      <div style="text-align: center; max-width: 750px; margin: 0 auto;">
+        <span class="badge badge-primary" style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(147, 197, 253, 0.3); margin-bottom: 1rem;">
+          <i class="fa-solid fa-network-wired"></i> System Architecture
+        </span>
+        <h2 style="color: #fff; font-size: 2rem; margin-bottom: 0.75rem;">Cloud Computing Architecture Demonstration</h2>
+        <p style="color: #cbd5e1; font-size: 0.95rem;">
+          This web application demonstrates a fully serverless, 3-tier cloud computing architecture utilizing Google Cloud and Firebase primitives:
+        </p>
+      </div>
+
+      <!-- Diagram Flow -->
+      <div class="arch-flow-diagram">
+        <div class="arch-node">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <h4 style="color: #fff; font-size: 1rem;">Client Tier</h4>
+          <p style="font-size: 0.75rem; color: #cbd5e1;">HTML5 + CSS3 + Vanilla JavaScript</p>
+        </div>
+        <div class="arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <div class="arch-node">
+          <i class="fa-solid fa-id-card-clip"></i>
+          <h4 style="color: #fff; font-size: 1rem;">Identity Provider</h4>
+          <p style="font-size: 0.75rem; color: #cbd5e1;">Firebase Authentication (OAuth2/JWT)</p>
+        </div>
+        <div class="arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <div class="arch-node">
+          <i class="fa-solid fa-database"></i>
+          <h4 style="color: #fff; font-size: 1rem;">Cloud NoSQL DB</h4>
+          <p style="font-size: 0.75rem; color: #cbd5e1;">Cloud Firestore (Document Database)</p>
+        </div>
+        <div class="arch-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <div class="arch-node">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <h4 style="color: #fff; font-size: 1rem;">Cloud Blob Storage</h4>
+          <p style="font-size: 0.75rem; color: #cbd5e1;">Google Cloud Storage (Buckets)</p>
+        </div>
+      </div>
+
+      <!-- Explanation Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-top: 2rem;">
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--border-radius-md); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <strong style="color: #60a5fa; display: block; margin-bottom: 0.25rem;"><i class="fa-solid fa-key"></i> Authentication</strong>
+          <span style="font-size: 0.8rem; color: #cbd5e1;">Manages stateful identity tokens and enforces student/admin permissions.</span>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--border-radius-md); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <strong style="color: #c084fc; display: block; margin-bottom: 0.25rem;"><i class="fa-solid fa-table-list"></i> Firestore Database</strong>
+          <span style="font-size: 0.8rem; color: #cbd5e1;">Stores user documents, resource metadata, tags, and personalized favorites.</span>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--border-radius-md); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <strong style="color: #34d399; display: block; margin-bottom: 0.25rem;"><i class="fa-solid fa-hard-drive"></i> Firebase Storage</strong>
+          <span style="font-size: 0.8rem; color: #cbd5e1;">Elastic object storage for binary files (PDFs, PPTs, Docs) with secure download URLs.</span>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.25rem; border-radius: var(--border-radius-md); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <strong style="color: #facc15; display: block; margin-bottom: 0.25rem;"><i class="fa-solid fa-lock"></i> Security Rules</strong>
+          <span style="font-size: 0.8rem; color: #cbd5e1;">Cloud-native authorization ensuring students modify only their own uploads.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="footer-container">
+      <div class="footer-top">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="brand-icon-box" style="width: 36px; height: 36px; font-size: 1rem;">
+            <i class="fa-solid fa-cloud"></i>
+          </div>
+          <div>
+            <strong style="color: #fff; font-size: 1.1rem;">Cloud Study Resource Vault</strong>
+            <p style="font-size: 0.8rem; color: #64748b;">Academic Cloud Computing Assignment Project</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1.5rem; font-size: 0.9rem;">
+          <a href="login.html" style="color: #94a3b8;">Student Login</a>
+          <a href="register.html" style="color: #94a3b8;">Create Account</a>
+          <a href="dashboard.html" style="color: #94a3b8;">Student Dashboard</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Cloud Study Resource Vault. Developed with HTML5, CSS3, Vanilla JS, and Firebase.</p>
+        <p>100% Serverless Cloud Architecture</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { initAuthGuard } from './js/auth.js';
+    // If user is already logged in, redirect them seamlessly to dashboard
+    initAuthGuard({ requireAuth: false, publicOnly: false });
+  </script>
+</body>
+</html>

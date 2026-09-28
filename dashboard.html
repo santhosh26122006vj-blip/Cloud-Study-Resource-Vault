@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - Cloud Study Resource Vault</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="brand-icon-box" style="width:34px; height:34px; font-size:1rem;">
+            <i class="fa-solid fa-cloud"></i>
+          </div>
+          <span>Study Vault</span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Academic Portal</div>
+        <a href="dashboard.html" class="nav-item active">
+          <i class="fa-solid fa-gauge"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="resources.html" class="nav-item">
+          <i class="fa-solid fa-compass"></i>
+          <span>Browse Resources</span>
+        </a>
+        <a href="add-resource.html" class="nav-item">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Add Resource</span>
+        </a>
+        <a href="my-resources.html" class="nav-item">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>My Resources</span>
+        </a>
+        <a href="favorites.html" class="nav-item">
+          <i class="fa-solid fa-star"></i>
+          <span>Favorites</span>
+        </a>
+
+
+        <div class="nav-section-title">Overview</div>
+        <a href="index.html" class="nav-item">
+          <i class="fa-solid fa-house"></i>
+          <span>Landing Page</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar-circle">S</div>
+          <div class="user-snippet-info">
+            <div class="user-snippet-name user-display-name">Loading...</div>
+            <div class="user-snippet-role">
+              <span class="badge badge-primary user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">STUDENT</span>
+            </div>
+          </div>
+          <button type="button" class="btn-icon btn-sm logout-trigger-btn" title="Sign Out" style="background:transparent; border-color:var(--sidebar-border); color:#cbd5e1;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="app-main">
+      <!-- Top Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="menu-toggle-btn" id="menuToggle" title="Open Navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-title-wrapper">
+            <h2 id="welcomeGreeting">Welcome back 👋</h2>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="header-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="topSearchInput" placeholder="Quick search..." onkeypress="if(event.key==='Enter') window.location.href='resources.html?q='+encodeURIComponent(this.value)">
+          </div>
+
+          <a href="add-resource.html" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus"></i> Upload Resource
+          </a>
+        </div>
+      </header>
+
+      <!-- Content Container -->
+      <main class="app-content">
+
+        <!-- Search Bar Banner -->
+        <div class="quick-actions-bar" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: #fff; padding: 2rem 1.75rem; border: none; box-shadow: var(--shadow-md);">
+          <div style="max-width: 600px;">
+            <h3 style="color:#fff; font-size:1.4rem; margin-bottom:0.4rem;">Find Everything in Your Cloud Vault</h3>
+            <p style="color:#bfdbfe; font-size:0.9rem; margin-bottom:1.25rem;">Search lecture notes, previous year question papers, slides, and academic references stored in Firestore.</p>
+            
+            <div style="display:flex; gap:0.5rem; background:#fff; padding:0.35rem 0.5rem 0.35rem 1rem; border-radius:var(--border-radius-full); box-shadow:var(--shadow-lg);">
+              <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted); align-self:center;"></i>
+              <input type="text" id="dashboardSearchInput" placeholder="Search by title, subject, category, or #tag..." style="border:none; outline:none; flex:1; font-size:0.95rem; color:var(--text-main);">
+              <button type="button" class="btn btn-primary btn-sm" id="dashboardSearchBtn" style="border-radius:var(--border-radius-full);">
+                Search
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0.5rem; align-items:flex-end;">
+            <button type="button" class="btn btn-secondary btn-sm" id="seedDemoDataBtn" style="background:rgba(255,255,255,0.2); color:#fff; border-color:rgba(255,255,255,0.4); backdrop-filter:blur(8px);">
+              <i class="fa-solid fa-cloud-arrow-down"></i> Load Demo College Resources
+            </button>
+            <span class="text-xs" style="color:#bfdbfe;">1-Click seed sample syllabus materials</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Statistics Cards -->
+        <div class="stats-grid" id="dashboardStats">
+          <!-- Total Resources -->
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <i class="fa-solid fa-database"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="statTotalResources">0</h3>
+              <p>Total Resources</p>
+            </div>
+          </div>
+
+          <!-- My Resources -->
+          <div class="stat-card">
+            <div class="stat-icon purple">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="statMyResources">0</h3>
+              <p>My Resources</p>
+            </div>
+          </div>
+
+          <!-- Favorites -->
+          <div class="stat-card">
+            <div class="stat-icon amber">
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="statFavorites">0</h3>
+              <p>Favorites</p>
+            </div>
+          </div>
+
+          <!-- Question Papers -->
+          <div class="stat-card">
+            <div class="stat-icon emerald">
+              <i class="fa-solid fa-file-circle-question"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="statQuestionPapers">0</h3>
+              <p>Question Papers</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Navigation Strip -->
+        <div class="quick-actions-bar">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-solid fa-bolt" style="color:var(--warning);"></i>
+            <strong style="font-size:0.95rem;">Quick Shortcuts:</strong>
+          </div>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <a href="add-resource.html" class="btn btn-outline btn-sm">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Add Resource
+            </a>
+            <a href="resources.html" class="btn btn-secondary btn-sm">
+              <i class="fa-solid fa-compass"></i> Browse Resources
+            </a>
+            <a href="my-resources.html" class="btn btn-secondary btn-sm">
+              <i class="fa-solid fa-folder-open"></i> My Resources
+            </a>
+            <a href="favorites.html" class="btn btn-secondary btn-sm">
+              <i class="fa-solid fa-star" style="color:#f59e0b;"></i> Favorites
+            </a>
+          </div>
+        </div>
+
+        <!-- Recently Added Resources -->
+        <div style="margin-top: 2rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+            <div>
+              <h3>Recently Added</h3>
+              <p class="text-sm text-muted">Latest study materials uploaded to Cloud Firestore</p>
+            </div>
+            <a href="resources.html" class="btn btn-secondary btn-sm">
+              View All <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <div class="resources-grid" id="recentResourcesGrid">
+            <!-- Skeleton cards while loading -->
+            <div class="resource-card skeleton" style="height: 260px;"></div>
+            <div class="resource-card skeleton" style="height: 260px;"></div>
+            <div class="resource-card skeleton" style="height: 260px;"></div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Resource Detail Modal Container -->
+  <div id="resourceDetailModal" class="modal-overlay"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

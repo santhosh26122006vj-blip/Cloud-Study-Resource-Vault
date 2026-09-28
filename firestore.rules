@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Authentication & ownership helpers
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // -------------------------------------------------------------------------
+    // USERS COLLECTION
+    // -------------------------------------------------------------------------
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // -------------------------------------------------------------------------
+    // RESOURCES COLLECTION
+    // -------------------------------------------------------------------------
+    match /resources/{resourceId} {
+      // Any authenticated student can browse and read study resources
+      allow read: if isAuthenticated();
+
+      // Students can upload study resources attributed to themselves
+      allow create: if isAuthenticated() 
+                    && request.resource.data.uploadedBy == request.auth.uid
+                    && request.resource.data.title is string
+                    && request.resource.data.subject is string;
+
+      // Students can update or delete only resources they uploaded
+      allow update, delete: if isAuthenticated() 
+                            && resource.data.uploadedBy == request.auth.uid;
+    }
+
+    // -------------------------------------------------------------------------
+    // FAVORITES COLLECTION
+    // -------------------------------------------------------------------------
+    match /favorites/{favoriteId} {
+      // Students can only view, add, and remove their own favorites
+      allow read, create, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+  }
+}
