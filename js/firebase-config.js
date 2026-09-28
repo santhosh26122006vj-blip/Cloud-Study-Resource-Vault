@@ -52,12 +52,13 @@ import {
 // PASTE YOUR FIREBASE PROJECT CONFIGURATION HERE
 // ============================================================================
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBbZGXvTGaVifVZtaumTYE_rJzExvou2_o",
+  authDomain: "cloud-study-resource-vault.firebaseapp.com",
+  projectId: "cloud-study-resource-vault",
+  storageBucket: "cloud-study-resource-vault.firebasestorage.app",
+  messagingSenderId: "985626683684",
+  appId: "1:985626683684:web:aae6864f1bf936da7aabb1",
+  measurementId: "G-3LMX4T5FLY"
 };
 
 // Check if credentials have been replaced with real credentials
