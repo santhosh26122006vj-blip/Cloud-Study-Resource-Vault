@@ -101,7 +101,7 @@ Cloud Study Resource Vault/
 │   ├── favorites.js        # Bookmarked resources controller
 │   └── demo-data.js        # 1-Click university sample resources seeder
 │
-├── firestore.rules         # Security rules: Authenticated students can upload/manage their own resources; admins can manage all resources
+├── firestore.rules         # Security rules: Admin writes, student reads & favorites
 ├── start.bat               # 1-Click local HTTP server launcher (avoids CORS file:/// errors)
 ├── upload-to-github.bat    # 1-Click helper to deploy directly to GitHub Pages
 └── README.md               # Project documentation and viva guide

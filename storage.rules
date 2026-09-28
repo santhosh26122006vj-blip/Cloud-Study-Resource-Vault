@@ -1,2 +1,35 @@
-// Firebase Cloud Storage is intentionally NOT used by this project.
-// The application uses Firebase Authentication + Firestore only.
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // -------------------------------------------------------------------------
+    // RESOURCES STORAGE BUCKET
+    // Path: resources/{userId}/{resourceId}/{filename}
+    // -------------------------------------------------------------------------
+    match /resources/{userId}/{resourceId}/{filename} {
+      // Any authenticated student/admin can download or view study materials
+      allow read: if isAuthenticated();
+
+      // Only the authenticated student can upload to their designated user directory
+      // Limit file size to 30MB
+      allow create: if isOwner(userId)
+                    && request.resource.size <= 30 * 1024 * 1024;
+
+      // Only the author can overwrite
+      allow update: if isOwner(userId)
+                    && request.resource.size <= 30 * 1024 * 1024;
+
+      // Only the author can delete their uploaded file
+      allow delete: if isOwner(userId);
+    }
+
+  }
+}

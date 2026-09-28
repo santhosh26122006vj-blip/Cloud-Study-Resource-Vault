@@ -142,22 +142,20 @@ export async function openStudyResource(resource) {
 
   const fileName = resource.fileName || resource.title || 'study-resource';
 
-  // 1. Firestore Base64 is the shared source of uploaded files. This allows
-  // every authenticated student to open the same uploaded file on another device.
-  let blob = null;
-  if (resource.fileData && resource.fileData.startsWith('data:')) {
+  // 1. Check if we have the physical file Blob stored in IndexedDB (by resource id or fileName)
+  let blob = await getFileBlob(resource.id);
+  if (!blob && resource.fileName) {
+    blob = await getFileBlob(resource.fileName);
+  }
+
+  // 2. Check if Firestore contains inline Base64 data (for files <= 750KB)
+  if (!blob && resource.fileData && resource.fileData.startsWith('data:')) {
     try {
       blob = base64ToBlob(resource.fileData);
-      // Cache locally for faster repeat access.
-      try { await saveFileBlob(resource.id, blob); } catch (_) {}
     } catch (e) {
       console.warn("Base64 decode failed:", e);
     }
   }
-
-  // 2. Fall back to the uploader's/local browser cache for older records.
-  if (!blob) blob = await getFileBlob(resource.id);
-  if (!blob && resource.fileName) blob = await getFileBlob(resource.fileName);
 
   // If we have a binary Blob:
   if (blob) {

@@ -1,5 +1,5 @@
 /**
- * Admin Add Resource Controller
+ * Add Resource Controller
  * Integrates "Choose File" selector, document validation (PDF, PPT, PPTX, DOC, DOCX, TXT),
  * auto-populating file name/type/path, and Cloud Firestore metadata persistence.
  * Spark plan compatible: Zero Firebase Storage dependency.
@@ -18,8 +18,8 @@ const SUPPORTED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.doc', '.docx', '.txt'];
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
 
-  // Admin Security Guard: Only administrators can add resources
-  initAuthGuard({ requireAuth: true, requireAdmin: false }, (profile) => {
+  // Any authenticated student or administrator can upload resources.
+  initAuthGuard({ requireAuth: true }, (profile) => {
     currentUser = profile;
   });
 
@@ -233,15 +233,15 @@ function setupFormSubmission() {
       return;
     }
 
-    if (!fileUrl && !selectedFile) {
-      showToast("File Required", "Please choose a file or provide a valid file URL.", "error");
-      document.getElementById('uploadDropzone').scrollIntoView({ behavior: 'smooth' });
+    if (!fileUrl) {
+      showToast("Path Required", "Please provide a file URL or relative path (e.g. resources/cloud-unit-1.pdf).", "error");
+      document.getElementById('resourceFileUrl').focus();
       return;
     }
 
     // UI state: saving
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span class="spinner"></span> Uploading resource...`;
+    submitBtn.innerHTML = `<span class="spinner"></span> Saving to Cloud Firestore...`;
 
     try {
       await createResource({
@@ -257,7 +257,7 @@ function setupFormSubmission() {
         currentUser: currentUser
       });
 
-      showToast("Resource Uploaded", "Your study material was uploaded and saved for other students.", "success");
+      showToast("Resource Added", "Metadata and file reference stored in Cloud Firestore!", "success");
 
       // Reveal success banner
       if (successBanner) {

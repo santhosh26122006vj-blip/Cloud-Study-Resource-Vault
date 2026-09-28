@@ -43,11 +43,7 @@
         </a>
         <a href="add-resource.html" class="nav-item active">
           <i class="fa-solid fa-plus-circle"></i>
-          <span>Add Resource</span>
-        </a>
-        <a href="my-resources.html" class="nav-item">
-          <i class="fa-solid fa-folder-open"></i>
-          <span>My Resources</span>
+          <span>Upload Resource</span>
         </a>
         <a href="favorites.html" class="nav-item">
           <i class="fa-solid fa-star"></i>
@@ -65,9 +61,9 @@
         <div class="user-snippet">
           <div class="user-avatar-circle" style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);">A</div>
           <div class="user-snippet-info">
-            <div class="user-snippet-name user-display-name">Administrator</div>
+            <div class="user-snippet-name user-display-name">Student / Administrator</div>
             <div class="user-snippet-role">
-              <span class="badge badge-warning user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">ADMIN</span>
+              <span class="badge badge-warning user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">USER</span>
             </div>
           </div>
           <button type="button" class="btn-icon btn-sm logout-trigger-btn" title="Sign Out" style="background:transparent; border-color:var(--sidebar-border); color:#cbd5e1;">
@@ -86,11 +82,14 @@
             <i class="fa-solid fa-bars"></i>
           </button>
           <div class="header-title-wrapper">
-            <h2>Upload Study Resource</h2>
+            <h2>Admin &bull; Upload New Study Resource</h2>
           </div>
         </div>
 
         <div class="header-right">
+          <a href="admin.html" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-shield-halved"></i> Admin Portal
+          </a>
           <a href="resources.html" class="btn btn-secondary btn-sm">
             <i class="fa-solid fa-compass"></i> View Resources
           </a>
@@ -105,7 +104,7 @@
           <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
             <i class="fa-solid fa-circle-check" style="color: var(--primary); font-size: 1.25rem;"></i>
             <div style="font-size: 0.85rem; color: #1e3a8a;">
-              <strong>Spark Free Plan Resource Architecture:</strong> Select a study file below. The file is securely encoded and stored with its resource record in Cloud Firestore so other signed-in students can download it. For the free-plan architecture, uploads are limited to 700 KB per file.
+              <strong>Spark Free Plan Resource Architecture:</strong> Select any file from your computer below. The system automatically detects its name, extension, and type, suggests the path <code>resources/filename.ext</code>, and stores the resource metadata in Cloud Firestore.
             </div>
           </div>
 
@@ -115,7 +114,7 @@
               <i class="fa-solid fa-check"></i>
             </div>
             <h3 style="color:#065f46; font-size:1.35rem; margin-bottom:0.4rem;">Resource Added Successfully!</h3>
-            <p style="color:#047857; font-size:0.9rem; margin-bottom:1.25rem;">Your study file and its metadata were saved in Cloud Firestore. Other signed-in students can now open or download it.</p>
+            <p style="color:#047857; font-size:0.9rem; margin-bottom:1.25rem;">Metadata document saved in Cloud Firestore. Students can now immediately view and open this resource.</p>
             <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
               <a href="resources.html" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-compass"></i> View in Browse
@@ -134,11 +133,11 @@
             
             <div style="margin-bottom: 1.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
               <div>
-                <h3 style="font-size: 1.35rem; margin-bottom: 0.25rem;">Add New Resource</h3>
+                <h3 style="font-size: 1.35rem; margin-bottom: 0.25rem;">Upload New Study Resource</h3>
                 <p class="text-sm text-muted">Complete study resource registration form for Cloud Firestore</p>
               </div>
               <span class="badge badge-warning" style="font-size:0.75rem; padding:0.25rem 0.6rem;">
-                <i class="fa-solid fa-lock"></i> ADMIN ACCESS
+                <i class="fa-solid fa-lock"></i> USER ACCESS
               </span>
             </div>
 
