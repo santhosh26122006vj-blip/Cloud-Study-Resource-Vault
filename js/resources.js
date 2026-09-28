@@ -1,23 +1,22 @@
 /**
  * Resources Browser Controller
- * Full-featured search, multi-criteria filtering, multi-order sorting,
- * and reactive UI updates for all cloud study materials.
+ * Full-featured search, subject & unit filtering, file type filtering,
+ * and responsive cards with direct resource open/download capabilities.
+ * Spark plan compatible: Zero Firebase Storage dependency.
  */
 
 import { initAuthGuard } from './auth.js';
 import { initSidebar, showToast, renderResourceDetailModal, formatDate, getTypeBadge, escapeHTML } from './ui.js';
-import { getAllResources, getUserFavoriteIds, toggleFavorite } from './resource-service.js';
+import { getAllResources, getUserFavoriteIds, toggleFavorite, incrementDownloadCount } from './resource-service.js';
 
 let currentUser = null;
 let allResources = [];
 let userFavoriteIds = new Set();
 
-// Active filter state
 const filters = {
   searchQuery: '',
-  category: 'all',
   subject: 'all',
-  semester: 'all',
+  unit: 'all',
   type: 'all',
   sortBy: 'newest'
 };
@@ -28,26 +27,26 @@ document.addEventListener('DOMContentLoaded', () => {
   initAuthGuard({ requireAuth: true, requireAdmin: false }, async (profile) => {
     currentUser = profile;
 
-    // Parse URL Query parameters (e.g. ?q=cloud or ?category=Notes)
+    // Parse URL Query parameters
     const urlParams = new URLSearchParams(window.location.search);
     const initialQuery = urlParams.get('q');
-    const initialCat = urlParams.get('category');
     const initialSubject = urlParams.get('subject');
+    const initialUnit = urlParams.get('unit');
 
     if (initialQuery) {
-      filters.searchQuery = initialQuery;
+      filters.searchQuery = initialQuery.toLowerCase();
       const searchInput = document.getElementById('searchInput');
       if (searchInput) searchInput.value = initialQuery;
-    }
-    if (initialCat) {
-      filters.category = initialCat;
-      const catSelect = document.getElementById('categoryFilter');
-      if (catSelect) catSelect.value = initialCat;
     }
     if (initialSubject) {
       filters.subject = initialSubject;
       const subSelect = document.getElementById('subjectFilter');
       if (subSelect) subSelect.value = initialSubject;
+    }
+    if (initialUnit) {
+      filters.unit = initialUnit;
+      const unitSelect = document.getElementById('unitFilter');
+      if (unitSelect) unitSelect.value = initialUnit;
     }
 
     setupEventListeners();
@@ -57,9 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupEventListeners() {
   const searchInput = document.getElementById('searchInput');
-  const catFilter = document.getElementById('categoryFilter');
   const subFilter = document.getElementById('subjectFilter');
-  const semFilter = document.getElementById('semesterFilter');
+  const unitFilter = document.getElementById('unitFilter');
   const typeFilter = document.getElementById('typeFilter');
   const sortSelect = document.getElementById('sortSelect');
   const resetBtn = document.getElementById('resetFiltersBtn');
@@ -71,13 +69,6 @@ function setupEventListeners() {
     });
   }
 
-  if (catFilter) {
-    catFilter.addEventListener('change', (e) => {
-      filters.category = e.target.value;
-      applyFiltersAndRender();
-    });
-  }
-
   if (subFilter) {
     subFilter.addEventListener('change', (e) => {
       filters.subject = e.target.value;
@@ -85,9 +76,9 @@ function setupEventListeners() {
     });
   }
 
-  if (semFilter) {
-    semFilter.addEventListener('change', (e) => {
-      filters.semester = e.target.value;
+  if (unitFilter) {
+    unitFilter.addEventListener('change', (e) => {
+      filters.unit = e.target.value;
       applyFiltersAndRender();
     });
   }
@@ -109,30 +100,30 @@ function setupEventListeners() {
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       filters.searchQuery = '';
-      filters.category = 'all';
       filters.subject = 'all';
-      filters.semester = 'all';
+      filters.unit = 'all';
       filters.type = 'all';
       filters.sortBy = 'newest';
 
       if (searchInput) searchInput.value = '';
-      if (catFilter) catFilter.value = 'all';
       if (subFilter) subFilter.value = 'all';
-      if (semFilter) semFilter.value = 'all';
+      if (unitFilter) unitFilter.value = 'all';
       if (typeFilter) typeFilter.value = 'all';
       if (sortSelect) sortSelect.value = 'newest';
 
       applyFiltersAndRender();
-      showToast("Filters Cleared", "Showing all resources.", "info");
+      showToast("Filters Cleared", "Showing all published resources.", "info");
     });
   }
 }
 
 async function fetchAndRender() {
   try {
+    // Only published resources for students, unless current user is admin
+    const isAdmin = currentUser?.role === 'admin';
     const [resources, favIds] = await Promise.all([
-      getAllResources(),
-      getUserFavoriteIds(currentUser.uid)
+      getAllResources(!isAdmin),
+      getUserFavoriteIds(currentUser?.uid)
     ]);
 
     allResources = resources;
@@ -148,40 +139,39 @@ async function fetchAndRender() {
 function applyFiltersAndRender() {
   let filtered = [...allResources];
 
-  // 1. Text Search across Title, Subject, Category, Description, Tags
+  // 1. Text Search across Title, Subject, Unit, Description, File Name, File Type
   if (filters.searchQuery) {
-    const q = filters.searchQuery.toLowerCase();
+    const q = filters.searchQuery;
     filtered = filtered.filter(item => {
       const matchTitle = (item.title || '').toLowerCase().includes(q);
       const matchSubject = (item.subject || '').toLowerCase().includes(q);
-      const matchCategory = (item.category || '').toLowerCase().includes(q);
+      const matchUnit = (item.unit || '').toLowerCase().includes(q);
       const matchDesc = (item.description || '').toLowerCase().includes(q);
-      const matchTags = (item.tags || []).some(t => t.toLowerCase().includes(q));
-      return matchTitle || matchSubject || matchCategory || matchDesc || matchTags;
+      const matchFile = (item.fileName || '').toLowerCase().includes(q);
+      const matchType = (item.fileType || item.type || '').toLowerCase().includes(q);
+      return matchTitle || matchSubject || matchUnit || matchDesc || matchFile || matchType;
     });
   }
 
-  // 2. Category Filter
-  if (filters.category !== 'all') {
-    filtered = filtered.filter(item => (item.category || '').toLowerCase() === filters.category.toLowerCase());
-  }
-
-  // 3. Subject Filter
+  // 2. Subject Filter
   if (filters.subject !== 'all') {
     filtered = filtered.filter(item => (item.subject || '').toLowerCase() === filters.subject.toLowerCase());
   }
 
-  // 4. Semester Filter
-  if (filters.semester !== 'all') {
-    filtered = filtered.filter(item => (item.semester || '').toLowerCase() === filters.semester.toLowerCase());
+  // 3. Unit Filter
+  if (filters.unit !== 'all') {
+    filtered = filtered.filter(item => (item.unit || '').toLowerCase() === filters.unit.toLowerCase());
   }
 
-  // 5. Type Filter
+  // 4. File Type Filter
   if (filters.type !== 'all') {
-    filtered = filtered.filter(item => (item.type || '').toLowerCase() === filters.type.toLowerCase());
+    filtered = filtered.filter(item => {
+      const t = (item.fileType || item.type || '').toLowerCase();
+      return t === filters.type.toLowerCase();
+    });
   }
 
-  // 6. Sorting
+  // 5. Sorting
   filtered.sort((a, b) => {
     const dateA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
     const dateB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
@@ -202,7 +192,7 @@ function applyFiltersAndRender() {
   // Update Result Counter
   const countEl = document.getElementById('resultsCount');
   if (countEl) {
-    countEl.textContent = `${filtered.length} ${filtered.length === 1 ? 'resource' : 'resources'} found`;
+    countEl.textContent = `${filtered.length} ${filtered.length === 1 ? 'resource' : 'resources'} available`;
   }
 
   renderGrid(filtered);
@@ -217,7 +207,7 @@ function renderGrid(resources) {
       <div class="empty-state">
         <div class="empty-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
         <h3>No Resources Found</h3>
-        <p>No study materials match your current search query and filter criteria. Try adjusting keywords or clear active filters.</p>
+        <p>No study materials match your search query and filter criteria. Try adjusting keywords or clear active filters.</p>
         <button type="button" class="btn btn-secondary btn-sm" id="emptyStateResetBtn">
           <i class="fa-solid fa-rotate-left"></i> Reset All Filters
         </button>
@@ -235,7 +225,9 @@ function renderGrid(resources) {
 
   container.innerHTML = resources.map(res => {
     const isFav = userFavoriteIds.has(res.id);
-    const badge = getTypeBadge(res.type);
+    const fileType = res.fileType || res.type || 'PDF';
+    const badge = getTypeBadge(fileType);
+    const unitText = res.unit || 'Unit 1';
 
     return `
       <div class="resource-card" data-id="${res.id}">
@@ -244,7 +236,7 @@ function renderGrid(resources) {
             <div class="type-icon ${badge.cssClass}">
               <i class="${badge.icon}"></i>
             </div>
-            <span>${escapeHTML(res.type || 'Resource')}</span>
+            <span>${escapeHTML(fileType)}</span>
           </div>
           <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-id="${res.id}" title="${isFav ? 'Remove Favorite' : 'Save to Favorites'}">
             <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-star"></i>
@@ -253,37 +245,38 @@ function renderGrid(resources) {
 
         <div class="card-body">
           <div class="card-meta-tags">
-            <span class="badge badge-primary">${escapeHTML(res.category)}</span>
-            <span class="badge badge-secondary">${escapeHTML(res.subject)}</span>
-            ${res.semester ? `<span class="badge badge-muted">${escapeHTML(res.semester)}</span>` : ''}
+            <span class="badge badge-secondary">${escapeHTML(res.subject || 'General')}</span>
+            <span class="badge badge-primary">${escapeHTML(unitText)}</span>
           </div>
+
           <h4 class="resource-title" title="${escapeHTML(res.title)}">${escapeHTML(res.title)}</h4>
-          <p class="resource-description">${escapeHTML(res.description || 'No description provided.')}</p>
+          <p class="resource-description">${escapeHTML(res.description || 'Comprehensive notes and study reference material.')}</p>
           
-          ${res.tags && res.tags.length > 0 ? `
-            <div class="resource-tags">
-              ${res.tags.slice(0, 4).map(t => `<span class="tag-pill">#${escapeHTML(t)}</span>`).join('')}
-              ${res.tags.length > 4 ? `<span class="tag-pill">+${res.tags.length - 4}</span>` : ''}
-            </div>
-          ` : ''}
+          <div style="font-size:0.75rem; color:var(--text-muted); font-family:monospace; margin-top:0.5rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            <i class="fa-regular fa-file"></i> ${escapeHTML(res.fileName || res.fileUrl || 'resource-file')}
+          </div>
         </div>
 
         <div class="card-footer">
           <div class="uploader-info">
-            <i class="fa-regular fa-user"></i>
-            <span>${escapeHTML(res.uploaderName || 'Student')}</span>
-            <span>&bull;</span>
+            <i class="fa-regular fa-calendar"></i>
             <span>${formatDate(res.createdAt)}</span>
           </div>
-          <button class="btn btn-outline btn-sm view-resource-btn" data-view-id="${res.id}">
-            <i class="fa-solid fa-eye"></i> View
-          </button>
+          
+          <div style="display:flex; gap:0.4rem;">
+            <button class="btn btn-outline btn-sm view-resource-btn" data-view-id="${res.id}" title="View Details">
+              <i class="fa-solid fa-circle-info"></i>
+            </button>
+            <button class="btn btn-primary btn-sm open-resource-btn" data-url="${escapeHTML(res.fileUrl)}" data-id="${res.id}" data-downloads="${res.downloadCount || 0}">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Resource
+            </button>
+          </div>
         </div>
       </div>
     `;
   }).join('');
 
-  // Favorites listener
+  // Favorites toggle listener
   container.querySelectorAll('.fav-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -302,6 +295,27 @@ function renderGrid(resources) {
         userFavoriteIds.delete(resId);
         showToast("Removed", "Removed from your favorites.", "info");
       }
+    });
+  });
+
+  // Open resource button listener
+  container.querySelectorAll('.open-resource-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const url = btn.getAttribute('data-url');
+      const id = btn.getAttribute('data-id');
+      const count = parseInt(btn.getAttribute('data-downloads') || '0', 10);
+
+      if (!url) {
+        showToast("Unavailable", "File link not provided for this resource.", "warning");
+        return;
+      }
+
+      // Increment download/open counter in Firestore
+      incrementDownloadCount(id, count);
+
+      // Safe direct open
+      window.open(url, "_blank");
     });
   });
 

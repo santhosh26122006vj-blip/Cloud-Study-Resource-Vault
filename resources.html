@@ -37,19 +37,18 @@
           <i class="fa-solid fa-compass"></i>
           <span>Browse Resources</span>
         </a>
-        <a href="add-resource.html" class="nav-item">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          <span>Add Resource</span>
+        <a href="admin.html" class="nav-item admin-only">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Admin Portal</span>
         </a>
-        <a href="my-resources.html" class="nav-item">
-          <i class="fa-solid fa-folder-open"></i>
-          <span>My Resources</span>
+        <a href="add-resource.html" class="nav-item admin-only">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span>Add Resource</span>
         </a>
         <a href="favorites.html" class="nav-item">
           <i class="fa-solid fa-star"></i>
           <span>Favorites</span>
         </a>
-
 
         <div class="nav-section-title">Overview</div>
         <a href="index.html" class="nav-item">
@@ -88,8 +87,11 @@
         </div>
 
         <div class="header-right">
-          <a href="add-resource.html" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-plus"></i> Upload Resource
+          <a href="add-resource.html" class="btn btn-primary btn-sm admin-only">
+            <i class="fa-solid fa-plus"></i> Add Resource
+          </a>
+          <a href="favorites.html" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-star" style="color:#f59e0b;"></i> Favorites
           </a>
         </div>
       </header>
@@ -103,7 +105,7 @@
           <div class="filter-row-top">
             <div class="input-icon-wrapper filter-search-box">
               <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="searchInput" class="form-control" placeholder="Search by title, subject, category, or #tags...">
+              <input type="text" id="searchInput" class="form-control" placeholder="Search by title, subject, unit, file type, or description...">
             </div>
 
             <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -119,71 +121,53 @@
 
           <!-- Bottom Row: Filter Dropdowns -->
           <div class="filter-row-bottom">
-            <!-- Category Filter -->
-            <div>
-              <select id="categoryFilter" class="filter-select">
-                <option value="all">All Categories</option>
-                <option value="Notes">Notes</option>
-                <option value="Question Papers">Question Papers</option>
-                <option value="Assignments">Assignments</option>
-                <option value="Presentations">Presentations</option>
-                <option value="E-books">E-books</option>
-                <option value="Lab Materials">Lab Materials</option>
-                <option value="Reference Materials">Reference Materials</option>
-                <option value="Useful Links">Useful Links</option>
-                <option value="YouTube Resources">YouTube Resources</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
             <!-- Subject Filter -->
             <div>
               <select id="subjectFilter" class="filter-select">
                 <option value="all">All Subjects</option>
                 <option value="Cloud Computing">Cloud Computing</option>
-                <option value="Web Development">Web Development</option>
-                <option value="Database Management Systems">Database Management Systems</option>
                 <option value="Computer Networks">Computer Networks</option>
+                <option value="Database Management Systems">Database Management Systems</option>
+                <option value="Database">Database</option>
+                <option value="Web Technology">Web Technology</option>
                 <option value="Java Programming">Java Programming</option>
                 <option value="Software Engineering">Software Engineering</option>
                 <option value="Operating Systems">Operating Systems</option>
-                <option value="Data Structures">Data Structures</option>
+                <option value="Programming">Programming</option>
                 <option value="Other">Other</option>
               </select>
             </div>
 
-            <!-- Semester Filter -->
+            <!-- Unit Filter -->
             <div>
-              <select id="semesterFilter" class="filter-select">
-                <option value="all">All Semesters</option>
-                <option value="Semester 1">Semester 1</option>
-                <option value="Semester 2">Semester 2</option>
-                <option value="Semester 3">Semester 3</option>
-                <option value="Semester 4">Semester 4</option>
-                <option value="Semester 5">Semester 5</option>
-                <option value="Semester 6">Semester 6</option>
+              <select id="unitFilter" class="filter-select">
+                <option value="all">All Units</option>
+                <option value="Unit 1">Unit 1</option>
+                <option value="Unit 2">Unit 2</option>
+                <option value="Unit 3">Unit 3</option>
+                <option value="Unit 4">Unit 4</option>
+                <option value="Unit 5">Unit 5</option>
+                <option value="General">General / All Units</option>
                 <option value="Other">Other</option>
               </select>
             </div>
 
-            <!-- Resource Type Filter -->
+            <!-- File Type Filter -->
             <div>
               <select id="typeFilter" class="filter-select">
-                <option value="all">All Types</option>
+                <option value="all">All File Types</option>
                 <option value="PDF">PDF</option>
-                <option value="Document">Document</option>
-                <option value="Presentation">Presentation</option>
-                <option value="Image">Image</option>
-                <option value="Video">Video</option>
-                <option value="Website">Website</option>
-                <option value="YouTube Link">YouTube Link</option>
+                <option value="PPT">PPT</option>
+                <option value="PPTX">PPTX</option>
+                <option value="DOC">DOC</option>
+                <option value="DOCX">DOCX</option>
                 <option value="Other">Other</option>
               </select>
             </div>
 
             <!-- Reset Button -->
             <button type="button" class="btn btn-secondary btn-sm" id="resetFiltersBtn" style="margin-left:auto;">
-              <i class="fa-solid fa-rotate-left"></i> Reset
+              <i class="fa-solid fa-rotate-left"></i> Reset Filters
             </button>
           </div>
         </div>
@@ -196,12 +180,12 @@
         <!-- Resources Grid -->
         <div class="resources-grid" id="resourcesBrowserGrid">
           <!-- Skeletons -->
-          <div class="resource-card skeleton" style="height: 270px;"></div>
-          <div class="resource-card skeleton" style="height: 270px;"></div>
-          <div class="resource-card skeleton" style="height: 270px;"></div>
-          <div class="resource-card skeleton" style="height: 270px;"></div>
-          <div class="resource-card skeleton" style="height: 270px;"></div>
-          <div class="resource-card skeleton" style="height: 270px;"></div>
+          <div class="resource-card skeleton" style="height: 280px;"></div>
+          <div class="resource-card skeleton" style="height: 280px;"></div>
+          <div class="resource-card skeleton" style="height: 280px;"></div>
+          <div class="resource-card skeleton" style="height: 280px;"></div>
+          <div class="resource-card skeleton" style="height: 280px;"></div>
+          <div class="resource-card skeleton" style="height: 280px;"></div>
         </div>
 
       </main>

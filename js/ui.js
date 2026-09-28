@@ -307,24 +307,24 @@ export function renderResourceDetailModal(resource, isFavorited, onToggleFav) {
             <strong class="text-sm">${escapeHTML(resource.subject)}</strong>
           </div>
           <div>
-            <span class="text-xs text-muted" style="display:block;">Category</span>
-            <strong class="text-sm">${escapeHTML(resource.category)}</strong>
+            <span class="text-xs text-muted" style="display:block;">Unit</span>
+            <strong class="text-sm">${escapeHTML(resource.unit || 'Unit 1')}</strong>
           </div>
           <div>
-            <span class="text-xs text-muted" style="display:block;">Semester</span>
-            <strong class="text-sm">${escapeHTML(resource.semester || 'All')}</strong>
+            <span class="text-xs text-muted" style="display:block;">File Type</span>
+            <strong class="text-sm">${escapeHTML(resource.fileType || resource.type || 'PDF')}</strong>
           </div>
           <div>
-            <span class="text-xs text-muted" style="display:block;">Uploaded By</span>
-            <strong class="text-sm">${escapeHTML(resource.uploaderName || 'Student')}</strong>
+            <span class="text-xs text-muted" style="display:block;">Added By</span>
+            <strong class="text-sm">${escapeHTML(resource.uploaderName || 'Admin')}</strong>
           </div>
           <div>
-            <span class="text-xs text-muted" style="display:block;">Upload Date</span>
+            <span class="text-xs text-muted" style="display:block;">Date Added</span>
             <strong class="text-sm">${formatDate(resource.createdAt)}</strong>
           </div>
           <div>
-            <span class="text-xs text-muted" style="display:block;">Resource Type</span>
-            <strong class="text-sm">${escapeHTML(resource.type || 'File')}</strong>
+            <span class="text-xs text-muted" style="display:block;">File Path / Link</span>
+            <strong class="text-sm" style="font-size:0.8rem; word-break:break-all;">${escapeHTML(resource.fileUrl || 'N/A')}</strong>
           </div>
         </div>
 
@@ -332,7 +332,6 @@ export function renderResourceDetailModal(resource, isFavorited, onToggleFav) {
           <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:var(--text-muted); background:var(--bg-body); padding:0.6rem 0.85rem; border-radius:var(--border-radius-sm);">
             <i class="fa-solid fa-paperclip"></i>
             <span>File: <strong>${escapeHTML(resource.fileName)}</strong></span>
-            ${resource.fileSize ? `<span>(${formatFileSize(resource.fileSize)})</span>` : ''}
           </div>
         ` : ''}
 

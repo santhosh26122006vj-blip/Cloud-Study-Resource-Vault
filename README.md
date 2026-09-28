@@ -1,40 +1,45 @@
 # ☁️ Cloud Study Resource Vault
 
-> **A Modern, Serverless Cloud Study Resource Management System for College Cloud Computing**
+> **A Modern, Serverless Cloud Study Resource Management System for College Cloud Computing**  
+> **100% Firebase Spark (Free Tier) Compatible — Zero Firebase Cloud Storage Dependency**
 
-[![Static Application](https://img.shields.io/badge/Architecture-100%25%20Serverless%20Cloud-blue.svg)](#)
+[![Static Application](https://img.shields.io/badge/Architecture-Serverless%20Static%20Web-blue.svg)](#)
 [![Stack](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20Vanilla%20JS%20%7C%20Firebase-purple.svg)](#)
-[![Platform](https://img.shields.io/badge/Platform-Desktop%20%7C%20Tablet%20%7C%20Mobile-emerald.svg)](#)
+[![Plan](https://img.shields.io/badge/Firebase%20Plan-Spark%20(100%25%20Free)-emerald.svg)](#)
+[![Platform](https://img.shields.io/badge/Platform-Desktop%20%7C%20Tablet%20%7C%20Mobile-cyan.svg)](#)
 
 ---
 
 ## 📖 1. Project Overview
 
-**Cloud Study Resource Vault** (short name: **Study Vault**) is a centralized cloud platform created for students and faculty to securely store, categorize, discover, and download academic study materials. 
+**Cloud Study Resource Vault** is a responsive, cloud-based academic study material repository created for college students and faculty. Students can register, log in, browse lecture notes, search syllabus units, filter by subject, unit, and file type, save bookmarked favorites, and open/download resource materials directly in their browser.
 
-Built exclusively with **HTML5, CSS3, Vanilla JavaScript, and Firebase**, this project demonstrates modern serverless cloud paradigms, zero-backend maintenance, and multi-tenant security without relying on any heavy frontend frameworks (React, Angular, Vue) or server runtimes (Node.js, Express, Python).
-
-### Key Features:
-* 🔐 **Cloud Authentication**: Email/password registration, login, session retention via `onAuthStateChanged`, and password reset.
-* 📂 **Cloud File Storage**: Resilient multi-part file uploads (PDF, DOCX, PPTX, JPG, PNG) stored in Google Cloud Storage buckets with live progress meters.
-* ⚡ **Cloud NoSQL Database**: Real-time study resources, user profiles, tags, categories, and favorites tracked in Cloud Firestore.
-* 🔍 **Multi-Attribute Search & Filter**: Instant filtering by Subject, Category, Academic Semester, Resource Type, and keyword search across titles and `#tags`.
-* ⭐ **Personalized Favorites**: Private bookmarking vault allowing students to pin critical exam question papers and revision notes.
-* ✏️ **Author CRUD Governance**: Full Create, Read, Update, and Delete control for resource owners, with safe confirmation modals.
-* 🛡️ **Role-Based Admin Portal**: Admin telemetry dashboard with system statistics, user directory inspection, and administrative resource moderation.
-* 📱 **Modern SaaS Responsive Design**: Clean typography, glassmorphism cards, CSS custom property themes, and responsive mobile navigation drawers.
+### Key Architecture Principle:
+* **ZERO Firebase Cloud Storage:** Firebase Storage requires the Blaze (pay-as-you-go) billing plan. To keep this project **100% free on the Firebase Spark tier**, binary resource files (PDF, PPT, DOC) reside in the project's local `/resources/` folder (or via external URLs), while **Cloud Firestore** stores the structured resource metadata, file paths, and download telemetry.
+* **Pure Static Web Stack:** Built exclusively with **HTML5, CSS3, Vanilla JavaScript, Firebase Authentication, and Cloud Firestore**. No React, Vue, Angular, Node.js, Express, PHP, Python, or backend servers.
 
 ---
 
-## 🏛️ 2. Cloud Computing Architecture Demonstration
+## 🔑 2. Instant Demo Credentials & Roles
+
+| Role | Email | Password | Access & Permissions |
+| :--- | :--- | :--- | :--- |
+| **Student** | `student@studyvault.edu` | `student123` | Browse published resources, search & filter, bookmark favorites, open/download files. Admin controls are completely restricted. |
+| **Admin** | `admin@studyvault.edu` | `admin123` | Full resource management: Add resources, Edit metadata, Delete Firestore documents, Publish/Unpublish toggle, view telemetry metrics. |
+
+> **Tip:** On the `login.html` page, click either **[ 👤 Student Demo ]** or **[ 🛡️ Admin Demo ]** for 1-click instant login!
+
+---
+
+## 🏛️ 3. Cloud Computing Architecture Demonstration
 
 ```text
 +-------------------------------------------------------------------------+
 |                                CLIENT TIER                              |
-|           HTML5  •  CSS3 (Modern SaaS Theme)  •  Vanilla JavaScript     |
+|           HTML5  •  CSS3 (Modern Responsive Theme)  •  Vanilla JS       |
 +--------------------+-------------------+--------------------------------+
                      |                   |
-        Auth Tokens  |                   |  REST / gRPC WebSockets
+        Auth Tokens  |                   |  REST / WebSockets (gRPC)
                      v                   v
 +--------------------+-------------------+--------------------------------+
 |                           FIREBASE SERVICES                             |
@@ -42,226 +47,218 @@ Built exclusively with **HTML5, CSS3, Vanilla JavaScript, and Firebase**, this p
 |  +------------------------+  +---------------------------------------+  |
 |  | Firebase Authentication|  |            Cloud Firestore            |  |
 |  | - Email / Password     |  | - users (Roles: student / admin)      |  |
-|  | - Session Management   |  | - resources (Metadata & File URLs)    |  |
+|  | - Session Management   |  | - resources (Metadata & File Paths)   |  |
 |  | - Password Reset       |  | - favorites (User-specific bookmarks) |  |
-|  +-----------+------------+  +-------------------+-------------------+  |
-|              |                                   |                      |
-|              +-----------------+-----------------+                      |
-|                                | Signed Uploads                         |
-|                                v                                        |
-|              +-----------------------------------+                      |
-|              |      Firebase Cloud Storage       |                      |
-|              | - resources/{userId}/{resId}/...  |                      |
-|              | - Elastic Blob Storage Buckets    |                      |
-|              +-----------------------------------+                      |
+|  +------------------------+  +---------------------------------------+  |
++-------------------------------------------------------------------------+
+                                 |
+                                 | Resolves File Path / URL
+                                 v
++-------------------------------------------------------------------------+
+|                            RESOURCE STORAGE                             |
+|  Local Directory: /resources/*.pdf  OR  External Web Links (https://)   |
+|  - Opened directly via: window.open(resource.fileUrl, "_blank")         |
 +-------------------------------------------------------------------------+
 ```
 
-### Mapping of Cloud Computing Concepts:
-
-| Cloud Concept | Implementation in Cloud Study Resource Vault |
-| :--- | :--- |
-| **IaaS / PaaS Foundation** | Google Cloud Platform underlying infrastructure powering Firebase serverless services. |
-| **Cloud Authentication** | Firebase Authentication handles secure credential hashing, session tokens, and identity lifecycle. |
-| **Cloud Database (NoSQL)** | Cloud Firestore provides automatic horizontal scaling, document-oriented storage, and ACID transactions. |
-| **Cloud Blob Storage** | Firebase Storage provides distributed object storage with elastic capacity and high-availability CDN delivery. |
-| **Role-Based Access (RBAC)** | Custom authorization rules evaluate `user.role` from Firestore documents (`student` vs `admin`). |
-| **Cloud Security Rules** | Declarative security rules (`firestore.rules` & `storage.rules`) guarantee data isolation at the storage layer. |
-| **Elastic Scalability** | Fully serverless: automatically scales from 1 student to 100,000 students without server provisioning. |
-
 ---
 
-## 📁 3. Project Structure
+## 📁 4. Project Structure
 
 ```text
 Cloud Study Resource Vault/
 │
-├── index.html              # Modern landing page with hero, features, and cloud architecture
-├── login.html              # Authentication sign-in with password reset modal
-├── register.html           # Student registration creating Auth and Firestore profile
-├── dashboard.html          # Student dashboard with live metrics, recents, and quick actions
-├── resources.html          # Main resource browser with multi-attribute search and filters
-├── add-resource.html       # File upload form with drag-and-drop and progress bar
-├── my-resources.html       # Owner-only resource manager with Edit and Delete
-├── favorites.html          # Private bookmarked resources
-├── admin.html              # Admin governance, metrics, user directory, and moderation
+├── index.html              # Landing page highlighting features & cloud architecture
+├── login.html              # Login page with 1-click Student & Admin testing buttons
+├── register.html           # Student registration creating Auth and Firestore profiles
+├── dashboard.html          # Dashboard with live telemetry (Total, Published, Subjects, Units)
+├── resources.html          # Student resource browser with search, Subject/Unit filters, and cards
+├── admin.html              # Admin Portal with resource table, CRUD actions, and publish toggles
+├── add-resource.html       # Admin form to add resources (metadata + file path)
+├── favorites.html          # Student private bookmarked resources vault
+├── my-resources.html       # Safe redirect router to Admin Portal or Browse Resources
+│
+├── resources/              # Physical study material files (PDFs, PPTs, DOCs)
+│   ├── cloud-computing-unit-1.pdf
+│   ├── cloud-computing-unit-2.pdf
+│   ├── cloud-security-overview.pdf
+│   ├── computer-networks-notes.pdf
+│   ├── database-management-notes.pdf
+│   └── web-technology-notes.pdf
 │
 ├── css/
-│   └── style.css           # Single comprehensive CSS3 stylesheet with variables & responsive grid
+│   └── style.css           # Modern CSS3 styling (variables, flexbox, grid, tables, modals)
 │
 ├── js/
-│   ├── firebase-config.js  # Centralized Firebase initialization & modular re-exports
-│   ├── auth.js             # Authentication controller and role guards
-│   ├── ui.js               # Reusable toasts, modals, confirmation dialogs, and formatters
-│   ├── resource-service.js # CRUD operations for Cloud Firestore & Firebase Storage
-│   ├── dashboard.js        # Dashboard telemetry and recently added cards
-│   ├── resources.js        # Search, multi-criteria filter, and sorting controller
-│   ├── add-resource.js     # File upload dropzone, validation, and storage task tracker
-│   ├── my-resources.js     # Resource owner edit/delete manager
+│   ├── firebase-config.js  # Centralized Firebase initialization (Spark plan compatible)
+│   ├── auth.js             # Authentication, session retention, and role-based guards
+│   ├── ui.js               # Toast notifications, modals, and formatters
+│   ├── resource-service.js # Pure Firestore CRUD operations (Zero Firebase Storage)
+│   ├── dashboard.js        # Telemetry metrics and recently added resources
+│   ├── resources.js        # Search, filtering by Subject/Unit/Type, and Open handlers
+│   ├── admin.js            # Admin management table, CRUD modals, and publish toggles
+│   ├── add-resource.js     # Form validation and Firestore document creation
 │   ├── favorites.js        # Bookmarked resources controller
-│   ├── admin.js            # Admin moderation and telemetry controller
-│   └── demo-data.js        # 1-Click college curriculum sample resource generator
+│   └── demo-data.js        # 1-Click university sample resources seeder
 │
-├── firestore.rules         # Production Firestore security rules
-├── storage.rules           # Production Firebase Storage security rules
-└── README.md               # Complete project documentation and viva guide
+├── firestore.rules         # Security rules: Admin writes, student reads & favorites
+├── start.bat               # 1-Click local HTTP server launcher (avoids CORS file:/// errors)
+├── upload-to-github.bat    # 1-Click helper to deploy directly to GitHub Pages
+└── README.md               # Project documentation and viva guide
 ```
 
 ---
 
-## 🚀 4. Step-by-Step Setup Guide
+## 🗃️ 5. Resource Data Structure in Cloud Firestore
 
-### Step 1: Create a Firebase Project
-1. Navigate to the [Firebase Console](https://console.firebase.google.com/).
-2. Click **Add project** (or **Create a project**).
-3. Name your project (e.g. `cloud-study-vault-demo`).
-4. Disable Google Analytics (optional) and click **Create Project**.
-
-### Step 2: Register a Web Application
-1. In your Firebase project overview, click the Web icon (`</>`) to add an app.
-2. Enter an app nickname (e.g., `Study Vault Web`).
-3. Leave "Firebase Hosting" unchecked for now and click **Register app**.
-4. Firebase will display your `firebaseConfig` object. Keep this tab open.
-
-### Step 3: Enable Firebase Authentication
-1. In the Firebase console left sidebar, click **Build** > **Authentication**.
-2. Click **Get Started**.
-3. Under the **Sign-in method** tab, click **Email/Password**.
-4. Toggle **Enable** (keep Email link / passwordless disabled) and click **Save**.
-
-### Step 4: Create Cloud Firestore Database
-1. In the left sidebar, click **Build** > **Firestore Database**.
-2. Click **Create database**.
-3. Choose a location closest to your region (e.g., `asia-south1` or `us-central1`).
-4. Choose **Start in production mode** (or **Start in test mode** for initial setup).
-5. Click **Create**.
-
-### Step 5: Enable Firebase Cloud Storage
-1. In the left sidebar, click **Build** > **Storage**.
-2. Click **Get Started**.
-3. Select **Start in production mode** (or test mode) and choose your bucket region.
-4. Click **Done**.
-
-### Step 6: Paste Firebase Configuration
-Open `js/firebase-config.js` in your code editor and replace the placeholder keys:
+All study resources are stored in the `resources` collection:
 
 ```javascript
+{
+  title: "Cloud Computing Unit 1",
+  subject: "Cloud Computing",
+  unit: "Unit 1",
+  description: "Introduction to cloud computing concepts and service models.",
+  fileName: "cloud-computing-unit-1.pdf",
+  fileUrl: "resources/cloud-computing-unit-1.pdf",  // Relative path or external URL
+  fileType: "PDF",
+  uploadedBy: "admin UID",
+  uploaderName: "Administrator",
+  createdAt: serverTimestamp(),
+  downloadCount: 0,
+  isPublished: true
+}
+```
+
+### How to Add New Study Materials:
+1. Place your PDF, PPT, or DOC file inside the project's `/resources/` folder:
+   ```text
+   resources/my-notes.pdf
+   ```
+2. Log in as Admin (`admin@studyvault.edu` / `admin123`) and click **Add Resource**.
+3. Fill in the form:
+   * **Title**: e.g., `Cloud Computing Unit 3 Security Notes`
+   * **Subject**: `Cloud Computing`
+   * **Unit**: `Unit 3`
+   * **File Name**: `my-notes.pdf`
+   * **File URL**: `resources/my-notes.pdf` (or an external URL such as `https://...`)
+   * **File Type**: `PDF`
+   * **Published**: `Yes`
+4. Click **Add Resource**. The metadata is immediately saved in Cloud Firestore, and students can view and open the file.
+
+---
+
+## 💻 6. How to Run Locally
+
+Because this project uses standard browser ES Modules (`type="module"`), modern browsers require it to run over an HTTP/HTTPS protocol rather than `file:///`:
+
+### Option A: Double-Click `start.bat` (Easiest)
+Simply double-click [`start.bat`](start.bat) in the project directory. It launches a local lightweight web server and opens `http://localhost:3000` automatically.
+
+### Option B: VS Code Live Server
+1. Open the project folder in Visual Studio Code.
+2. Right-click `index.html` and click **Open with Live Server**.
+
+### Option C: Python HTTP Server
+```bash
+python -m http.server 3000
+```
+Open your browser at `http://localhost:3000`.
+
+---
+
+## 🌐 7. Deploying to GitHub Pages (Free Hosting)
+
+1. Double-click [`upload-to-github.bat`](upload-to-github.bat).
+2. Enter your GitHub repository URL when prompted.
+3. In GitHub: Go to **Settings** > **Pages** > Select Branch: `main` > Click **Save**.
+4. In 1 minute, your website will be live worldwide:
+   ```text
+   https://<your-username>.github.io/<your-repo-name>/
+   ```
+Because all resource files are committed in `/resources/`, all PDF/PPT files will open perfectly on GitHub Pages!
+
+---
+
+## 🛡️ 8. Firebase Configuration & Firestore Security Rules
+
+### Step 1: Firebase Configuration
+In [`js/firebase-config.js`](js/firebase-config.js), verify your project config:
+```javascript
 export const firebaseConfig = {
-  apiKey: "AIzaSyD-EXAMPLE-YOUR-REAL-API-KEY",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef123456789"
+  apiKey: "AIzaSyBbZGXvTGaVifVZtaumTYE_rJzExvou2_o",
+  authDomain: "cloud-study-resource-vault.firebaseapp.com",
+  projectId: "cloud-study-resource-vault",
+  storageBucket: "cloud-study-resource-vault.firebasestorage.app",
+  messagingSenderId: "985626683684",
+  appId: "1:985626683684:web:aae6864f1bf936da7aabb1"
 };
 ```
 
-> **Note:** The application includes a fallback demo mode. If credentials are not yet configured, a helpful notification banner guides you to `README.md` while allowing local previewing.
+### Step 2: Deploy Firestore Security Rules
+Go to **Firebase Console** > **Firestore Database** > **Rules** and paste:
 
-### Step 7: Deploy Security Rules
-In the Firebase Console:
-1. **Firestore Rules**: Go to **Firestore Database** > **Rules**, paste the contents of `firestore.rules`, and click **Publish**.
-2. **Storage Rules**: Go to **Storage** > **Rules**, paste the contents of `storage.rules`, and click **Publish**.
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
 
-### Step 8: How to Create the First Admin Account
-1. Open the application in your browser and register a new user on `register.html` (e.g. `admin@college.edu`).
-2. Go to the [Firebase Console](https://console.firebase.google.com/) > **Firestore Database**.
-3. Under the `users` collection, locate the document corresponding to your newly created account.
-4. Edit the `role` field value from `"student"` to `"admin"`.
-5. Now, logging in with `admin@college.edu` will automatically redirect you to `admin.html` with full administrative privileges!
+    function isAuthenticated() {
+      return request.auth != null;
+    }
 
----
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
 
-## 💻 5. Running the Application Locally
+    function isAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        request.auth.token.email.matches('.*admin.*')
+      );
+    }
 
-Because this application uses standard browser ES Modules (`type="module"`), it must be served over an HTTP server (to prevent browser CORS restrictions on `file:///` URLs):
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
 
-### Option A: VS Code Live Server (Recommended)
-1. Install the **Live Server** extension in Visual Studio Code.
-2. Right-click `index.html` and select **Open with Live Server**.
+    // Resources Collection
+    match /resources/{resourceId} {
+      allow read: if isAuthenticated();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        isAuthenticated() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloadCount'])
+      );
+    }
 
-### Option B: Node.js `npx serve`
-```bash
-npx serve .
+    // Favorites Collection
+    match /favorites/{favoriteId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+  }
+}
 ```
 
-### Option C: Python Built-in HTTP Server
-```bash
-# Python 3
-python -m http.server 8000
-```
-Open your browser at `http://localhost:8000`.
-
 ---
 
-## 🌐 6. Deploying to Firebase Hosting
+## ✅ 9. Project Evaluation & Feature Checklist
 
-You can deploy the static web application to Google's worldwide CDN using Firebase Hosting:
-
-1. Install Firebase CLI (if not already installed):
-   ```bash
-   npm install -g firebase-tools
-   ```
-2. Log in to your Google Account:
-   ```bash
-   firebase login
-   ```
-3. Initialize hosting in the project directory:
-   ```bash
-   firebase init
-   ```
-   - Select: **Hosting: Configure files for Firebase Hosting**
-   - Choose: **Use an existing project** (select your project)
-   - Public directory: `.` (type a single dot for current folder)
-   - Configure as single-page app: `No`
-   - Set up automatic builds: `No`
-4. Deploy the application:
-   ```bash
-   firebase deploy
-   ```
-5. Your project will be live at `https://your-project-id.web.app`!
-
----
-
-## 📚 7. Sample College Resources (1-Click Demo)
-
-To facilitate presentations and viva demonstrations for college examiners, click the **"Load Demo College Resources"** button located on the **Dashboard** or **Admin Portal**.
-
-This instantly generates the 7 standard university curriculum resources:
-1. **Cloud Computing Unit 1 Notes: Fundamentals & Virtualization** *(PDF)*
-2. **Cloud Computing Unit 2 Notes: Cloud Architecture & Storage Services** *(PDF)*
-3. **Cloud Computing End-Semester Question Paper (2024)** *(PDF)*
-4. **Cloud Security & Identity Access Management Presentation** *(PPTX)*
-5. **Database Management Systems Complete Unit Notes** *(PDF)*
-6. **Computer Networks Mid-Term Question Paper with Solutions** *(PDF)*
-7. **Java Programming & Object-Oriented Design Lecture Notes** *(DOCX)*
-
----
-
-## ✅ 8. Evaluation & Testing Checklist
-
-Use this checklist during project evaluation:
-
-- [x] **Registration**: Register a student with name, email, password, and password confirmation.
-- [x] **Firestore User Doc**: Verifiable user document created in `users/{userId}` with role `"student"`.
-- [x] **Login / Auth Guard**: Unauthenticated users blocked from entering `dashboard.html`.
-- [x] **Dashboard Telemetry**: Metrics dynamically calculate total resources, my resources, favorites, and question papers.
-- [x] **Upload Resource**: Upload PDF/DOC file to Firebase Storage with live percentage progress bar.
-- [x] **External Link Support**: Option to save YouTube tutorials or web resources without file upload.
-- [x] **Browse & Filter**: Filter resources by Category, Subject, Semester, and Type.
-- [x] **Instant Search**: Search across titles, subjects, descriptions, and tags.
-- [x] **Favorites**: Click ⭐ to bookmark; verify addition to `favorites.html` and Firestore `favorites` collection.
-- [x] **My Resources**: Edit resource details; delete with confirmation dialog.
-- [x] **Admin Gate**: Regular students attempting to navigate to `admin.html` are blocked and redirected to dashboard.
-- [x] **Admin Governance**: Admin can view user registry, inspect telemetry, and delete unwanted uploads.
-- [x] **Responsive Mobile**: Navigation collapses into smooth mobile drawer on screens below 768px.
-- [x] **Pure Vanilla Stack**: Verified zero usage of React, Vue, Tailwind, Bootstrap, Node backend, or external servers.
-
----
-
-## 👨‍💻 Academic Project Details
-
-* **Project Title**: Cloud Study Resource Vault
-* **Subject**: Cloud Computing
-* **Architecture Pattern**: 3-Tier Serverless Cloud Web Application
-* **License**: MIT Academic Open Source
+- [x] **Zero Firebase Storage**: 100% Spark/free tier compliance. No Blaze upgrade required.
+- [x] **Local & External File Support**: PDFs/PPTs in `/resources/` or external URLs open directly via `[ Open Resource ]`.
+- [x] **Authentication**: Email & Password sign-up and sign-in via Firebase Authentication.
+- [x] **Role Separation**:
+  - **Admin**: Full resource management (Add, Edit, Delete Firestore docs, Toggle publication status).
+  - **Student**: Browse published resources, search, filter by Subject/Unit/Type, save favorites. Admin controls are hidden.
+- [x] **Dashboard Telemetry**: Live metrics for Total Resources, Published Resources, Subjects, and Units.
+- [x] **Search & Filters**: Instant search across title, subject, unit, description, and file type without page reloads.
+- [x] **Sample College Data**: 1-click seeding button to populate standard curriculum notes.
+- [x] **Mobile Responsive**: Fully responsive layout across laptops, tablets, and smartphones.
+- [x] **Strict Tech Stack**: HTML5, CSS3, Vanilla JS, Firebase Auth & Firestore only.

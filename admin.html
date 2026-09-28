@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - Cloud Study Resource Vault</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="brand-icon-box" style="width:34px; height:34px; font-size:1rem;">
+            <i class="fa-solid fa-cloud"></i>
+          </div>
+          <span>Study Vault</span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Academic Portal</div>
+        <a href="dashboard.html" class="nav-item">
+          <i class="fa-solid fa-gauge"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="resources.html" class="nav-item">
+          <i class="fa-solid fa-compass"></i>
+          <span>Browse Resources</span>
+        </a>
+        <a href="admin.html" class="nav-item active admin-only">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Admin Portal</span>
+        </a>
+        <a href="add-resource.html" class="nav-item admin-only">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span>Add Resource</span>
+        </a>
+        <a href="favorites.html" class="nav-item">
+          <i class="fa-solid fa-star"></i>
+          <span>Favorites</span>
+        </a>
+
+        <div class="nav-section-title">Overview</div>
+        <a href="index.html" class="nav-item">
+          <i class="fa-solid fa-house"></i>
+          <span>Landing Page</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar-circle" style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);">A</div>
+          <div class="user-snippet-info">
+            <div class="user-snippet-name user-display-name">Administrator</div>
+            <div class="user-snippet-role">
+              <span class="badge badge-warning user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">ADMIN</span>
+            </div>
+          </div>
+          <button type="button" class="btn-icon btn-sm logout-trigger-btn" title="Sign Out" style="background:transparent; border-color:var(--sidebar-border); color:#cbd5e1;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="menu-toggle-btn" id="menuToggle" title="Open Navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-title-wrapper">
+            <h2>Admin Resource Management</h2>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <a href="add-resource.html" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus"></i> Add New Resource
+          </a>
+          <button type="button" class="btn btn-secondary btn-sm" id="seedDataBtn">
+            <i class="fa-solid fa-cloud-arrow-down"></i> Load Demo Data
+          </button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="app-content">
+
+        <!-- Metrics Cards (Requested: Total Resources, Published Resources, Subjects, Units) -->
+        <div class="stats-grid" style="margin-bottom: 2rem;">
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="statTotalResources">0</h3>
+              <p>Total Resources</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon emerald">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="statPublishedResources">0</h3>
+              <p>Published Resources</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon purple">
+              <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="statTotalSubjects">0</h3>
+              <p>Subjects</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon amber">
+              <i class="fa-solid fa-list-ol"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="statTotalUnits">0</h3>
+              <p>Units</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="filter-toolbar" style="margin-bottom: 1.5rem;">
+          <!-- Top Row: Search -->
+          <div class="filter-row-top">
+            <div class="input-icon-wrapper filter-search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="adminSearchInput" class="form-control" placeholder="Search by title, subject, unit, file name, description...">
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span class="badge badge-primary" id="resourceCountBadge">0 resources</span>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Filters -->
+          <div class="filter-row-bottom">
+            <!-- Subject Filter -->
+            <div>
+              <select id="adminSubjectFilter" class="filter-select">
+                <option value="all">All Subjects</option>
+                <option value="Cloud Computing">Cloud Computing</option>
+                <option value="Computer Networks">Computer Networks</option>
+                <option value="Database Management Systems">Database Management Systems</option>
+                <option value="Database">Database</option>
+                <option value="Web Technology">Web Technology</option>
+                <option value="Java Programming">Java Programming</option>
+                <option value="Software Engineering">Software Engineering</option>
+                <option value="Operating Systems">Operating Systems</option>
+                <option value="Programming">Programming</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <!-- Unit Filter -->
+            <div>
+              <select id="adminUnitFilter" class="filter-select">
+                <option value="all">All Units</option>
+                <option value="Unit 1">Unit 1</option>
+                <option value="Unit 2">Unit 2</option>
+                <option value="Unit 3">Unit 3</option>
+                <option value="Unit 4">Unit 4</option>
+                <option value="Unit 5">Unit 5</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <!-- Published Status Filter -->
+            <div>
+              <select id="adminStatusFilter" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="published">Published Only</option>
+                <option value="unpublished">Unpublished (Drafts)</option>
+              </select>
+            </div>
+
+            <!-- Reset Button -->
+            <button type="button" class="btn btn-secondary btn-sm" id="adminResetBtn" style="margin-left:auto;">
+              <i class="fa-solid fa-rotate-left"></i> Reset Filters
+            </button>
+          </div>
+        </div>
+
+        <!-- Management Table -->
+        <div class="table-card">
+          <div class="table-header">
+            <div>
+              <h3 style="font-size: 1.1rem; margin-bottom: 0.2rem;">All Study Resources in Firestore</h3>
+              <p class="text-xs text-muted">Manage metadata, toggle publication status, or remove documents (Spark Plan compatible)</p>
+            </div>
+            <a href="add-resource.html" class="btn btn-primary btn-sm">
+              <i class="fa-solid fa-plus"></i> Add Resource
+            </a>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="custom-table" id="adminResourcesTable">
+              <thead>
+                <tr>
+                  <th style="min-width: 240px;">Resource Details</th>
+                  <th>Subject & Unit</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Uploaded Date</th>
+                  <th style="min-width: 240px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                    Loading resources from Cloud Firestore...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Edit Resource Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-container" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 id="editModalTitle">Edit Resource Metadata</h3>
+        <i class="fa-solid fa-xmark modal-close-btn" id="closeEditModal"></i>
+      </div>
+      <div class="modal-body">
+        <form id="editResourceForm" novalidate>
+          <input type="hidden" id="editDocId">
+
+          <!-- Title -->
+          <div class="form-group">
+            <label for="editTitle" class="form-label">Resource Title <span class="required">*</span></label>
+            <input type="text" id="editTitle" class="form-control" required>
+          </div>
+
+          <!-- Subject & Unit (2-col) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="editSubject" class="form-label">Subject <span class="required">*</span></label>
+              <select id="editSubject" class="form-control" required>
+                <option value="Cloud Computing">Cloud Computing</option>
+                <option value="Computer Networks">Computer Networks</option>
+                <option value="Database Management Systems">Database Management Systems</option>
+                <option value="Database">Database</option>
+                <option value="Web Technology">Web Technology</option>
+                <option value="Java Programming">Java Programming</option>
+                <option value="Software Engineering">Software Engineering</option>
+                <option value="Operating Systems">Operating Systems</option>
+                <option value="Programming">Programming</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="editUnit" class="form-label">Unit <span class="required">*</span></label>
+              <select id="editUnit" class="form-control" required>
+                <option value="Unit 1">Unit 1</option>
+                <option value="Unit 2">Unit 2</option>
+                <option value="Unit 3">Unit 3</option>
+                <option value="Unit 4">Unit 4</option>
+                <option value="Unit 5">Unit 5</option>
+                <option value="General">General / All Units</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="editDescription" class="form-label">Description</label>
+            <textarea id="editDescription" class="form-control" rows="3"></textarea>
+          </div>
+
+          <!-- File Name & File Type (2-col) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="editFileName" class="form-label">File Name</label>
+              <input type="text" id="editFileName" class="form-control" placeholder="e.g. cloud-computing-unit-1.pdf">
+            </div>
+
+            <div class="form-group">
+              <label for="editFileType" class="form-label">File Type <span class="required">*</span></label>
+              <select id="editFileType" class="form-control" required>
+                <option value="PDF">PDF</option>
+                <option value="PPT">PPT</option>
+                <option value="PPTX">PPTX</option>
+                <option value="DOC">DOC</option>
+                <option value="DOCX">DOCX</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- File URL / Path -->
+          <div class="form-group">
+            <label for="editFileUrl" class="form-label">File URL / Relative Path <span class="required">*</span></label>
+            <input type="text" id="editFileUrl" class="form-control" placeholder="e.g. resources/cloud-computing-unit-1.pdf or https://..." required>
+            <span class="form-hint">Points to local project file (e.g. resources/file.pdf) or external URL</span>
+          </div>
+
+          <!-- Published Status -->
+          <div class="form-group">
+            <label for="editIsPublished" class="form-label">Publication Status</label>
+            <select id="editIsPublished" class="form-control">
+              <option value="true">Published (Visible to Students)</option>
+              <option value="false">Unpublished (Hidden / Draft)</option>
+            </select>
+          </div>
+
+          <div class="modal-footer" style="padding-left:0; padding-right:0; padding-bottom:0;">
+            <button type="button" class="btn btn-secondary btn-sm" id="cancelEditBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="saveEditBtn">
+              <i class="fa-solid fa-floppy-disk"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resource Detail Modal Container -->
+  <div id="resourceDetailModal" class="modal-overlay"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

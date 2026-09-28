@@ -38,7 +38,7 @@
       <!-- Active Session Notice (Shown only if already logged in) -->
       <div id="alreadyLoggedInNotice" style="display:none; background:var(--primary-light); border:1px solid var(--primary-border); border-radius:var(--border-radius-md); padding:1rem; margin-bottom:1.5rem; text-align:center;">
         <p style="font-size:0.875rem; color:var(--primary-dark); margin-bottom:0.75rem;">
-          You are currently signed in as <strong id="loggedInUserName">Student</strong>.
+          You are currently signed in as <strong id="loggedInUserName">User</strong>.
         </p>
         <div style="display:flex; justify-content:center; gap:0.5rem;">
           <a href="dashboard.html" class="btn btn-primary btn-sm" id="goToDashboardBtn">
@@ -56,7 +56,7 @@
           <label for="loginEmail" class="form-label">Email Address</label>
           <div class="input-icon-wrapper">
             <i class="fa-regular fa-envelope"></i>
-            <input type="email" id="loginEmail" class="form-control" placeholder="student@college.edu" required autocomplete="email">
+            <input type="email" id="loginEmail" class="form-control" placeholder="student@studyvault.edu" required autocomplete="email">
           </div>
         </div>
 
@@ -80,14 +80,20 @@
         </button>
       </form>
 
-      <!-- 1-Click Quick Student Login Section (Instant Test Access) -->
+      <!-- 1-Click Demo Logins Section -->
       <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color); text-align: center;">
         <span class="text-xs text-muted" style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; display: block; margin-bottom: 0.75rem;">
-          ⚡ 1-Click Quick Student Login (Instant Access)
+          ⚡ 1-Click Fast Testing Accounts:
         </span>
-        <button type="button" class="btn btn-secondary btn-sm" id="quickStudentLoginBtn" style="width: 100%; font-size: 0.875rem; padding: 0.6rem 1rem;">
-          <i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> One-Click Demo Student Login
-        </button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary btn-sm" id="quickStudentLoginBtn" style="font-size: 0.85rem; padding: 0.6rem 0.5rem;">
+            <i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> Student Demo
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="quickAdminLoginBtn" style="font-size: 0.85rem; padding: 0.6rem 0.5rem; border-color: #f59e0b; color: #b45309;">
+            <i class="fa-solid fa-shield-halved" style="color: #f59e0b;"></i> Admin Demo
+          </button>
+        </div>
+        <span class="text-xs text-muted" style="display:block; margin-top:0.4rem;">Student: browse & open files • Admin: manage, edit & delete</span>
       </div>
 
       <div class="auth-footer">
@@ -112,7 +118,7 @@
           <label for="resetEmail" class="form-label">Email Address</label>
           <div class="input-icon-wrapper">
             <i class="fa-regular fa-envelope"></i>
-            <input type="email" id="resetEmail" class="form-control" placeholder="student@college.edu">
+            <input type="email" id="resetEmail" class="form-control" placeholder="student@studyvault.edu">
           </div>
         </div>
       </div>
@@ -135,7 +141,7 @@
     const emailInput = document.getElementById('loginEmail');
     const passwordInput = document.getElementById('loginPassword');
 
-    // Check if user is already logged in, show session banner without force redirecting
+    // Check if user is already logged in, show session banner
     initAuthGuard({ requireAuth: false, publicOnly: true }, (profile) => {
       if (profile) {
         const notice = document.getElementById('alreadyLoggedInNotice');
@@ -144,10 +150,10 @@
         const switchBtn = document.getElementById('switchAccountBtn');
 
         if (notice && nameEl) {
-          nameEl.textContent = `${profile.name || profile.email} (STUDENT)`;
+          nameEl.textContent = `${profile.name || profile.email} (${(profile.role || 'student').toUpperCase()})`;
           notice.style.display = 'block';
           if (dashBtn) {
-            dashBtn.href = 'dashboard.html';
+            dashBtn.href = profile.role === 'admin' ? 'admin.html' : 'dashboard.html';
           }
           if (switchBtn) {
             switchBtn.onclick = async () => {
@@ -180,16 +186,24 @@
       await executeLogin('student@studyvault.edu', 'student123');
     });
 
+    // Quick Demo Login: Admin
+    document.getElementById('quickAdminLoginBtn').addEventListener('click', async () => {
+      emailInput.value = 'admin@studyvault.edu';
+      passwordInput.value = 'admin123';
+      await executeLogin('admin@studyvault.edu', 'admin123');
+    });
+
     async function executeLogin(email, password) {
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span class="spinner"></span> Signing In...`;
 
       try {
         const result = await loginUser(email, password);
-        showToast("Login Successful", "Welcome back! Redirecting to Dashboard...", "success");
+        const isAdmin = result.role === 'admin';
+        showToast("Login Successful", `Signed in as ${isAdmin ? 'Administrator' : 'Student'}! Redirecting...`, "success");
 
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
+          window.location.href = isAdmin ? 'admin.html' : 'dashboard.html';
         }, 500);
       } catch (err) {
         console.error("Login failure:", err);

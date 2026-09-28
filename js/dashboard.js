@@ -1,12 +1,13 @@
 /**
- * Student Dashboard Controller
- * Displays dynamic statistics, quick shortcuts, recently added study materials,
- * and facilitates instant resource preview and favoriting.
+ * Dashboard Controller
+ * Displays dynamic statistics (Total Resources, Published Resources, Subjects, Units),
+ * quick shortcuts, recently added study materials, and direct resource access.
+ * Spark plan compatible: Zero Firebase Storage dependency.
  */
 
 import { initAuthGuard } from './auth.js';
 import { initSidebar, showToast, renderResourceDetailModal, formatDate, getTypeBadge, escapeHTML } from './ui.js';
-import { getDashboardStats, getRecentlyAddedResources, getUserFavoriteIds, toggleFavorite } from './resource-service.js';
+import { getDashboardStats, getRecentlyAddedResources, getUserFavoriteIds, toggleFavorite, incrementDownloadCount } from './resource-service.js';
 import { seedDemoData } from './demo-data.js';
 
 let currentUser = null;
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUser = profile;
     const greetingEl = document.getElementById('welcomeGreeting');
     if (greetingEl) {
-      greetingEl.textContent = `Welcome back, ${profile.name || 'Student'} 👋`;
+      greetingEl.textContent = `Welcome back, ${profile.name || (profile.role === 'admin' ? 'Administrator' : 'Student')} 👋`;
     }
 
     await loadDashboardData();
@@ -60,25 +61,29 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadDashboardData() {
-  const statsContainer = document.getElementById('dashboardStats');
-  const recentContainer = document.getElementById('recentResourcesGrid');
-
   try {
+    const isAdmin = currentUser?.role === 'admin';
+
     // 1. Fetch Stats & Favorites concurrently
     const [stats, favIds, recents] = await Promise.all([
-      getDashboardStats(currentUser.uid),
-      getUserFavoriteIds(currentUser.uid),
-      getRecentlyAddedResources(6)
+      getDashboardStats(currentUser?.uid),
+      getUserFavoriteIds(currentUser?.uid),
+      getRecentlyAddedResources(6, !isAdmin)
     ]);
 
     userFavoriteIds = favIds;
     recentResources = recents;
 
-    // Update Stats Elements
-    document.getElementById('statTotalResources').textContent = stats.totalResources;
-    document.getElementById('statMyResources').textContent = stats.myResources;
-    document.getElementById('statFavorites').textContent = stats.favorites;
-    document.getElementById('statQuestionPapers').textContent = stats.questionPapers;
+    // Update Telemetry Elements
+    const elTotal = document.getElementById('statTotalResources');
+    const elPub = document.getElementById('statPublishedResources');
+    const elSub = document.getElementById('statTotalSubjects');
+    const elUnits = document.getElementById('statTotalUnits');
+
+    if (elTotal) elTotal.textContent = stats.totalResources;
+    if (elPub) elPub.textContent = stats.publishedResources;
+    if (elSub) elSub.textContent = stats.totalSubjects;
+    if (elUnits) elUnits.textContent = stats.totalUnits;
 
     // Render Recent Resources
     renderRecentResources(recentResources);
@@ -98,12 +103,9 @@ function renderRecentResources(resources) {
       <div class="empty-state">
         <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
         <h3>No Study Resources Yet</h3>
-        <p>Your cloud repository is currently clean. Start by uploading lecture notes, question papers, or load demo curriculum data.</p>
+        <p>Your cloud repository is currently clean. Start by uploading syllabus notes or click below to load demo college resources.</p>
         <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
-          <a href="add-resource.html" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Resource
-          </a>
-          <button type="button" class="btn btn-secondary btn-sm" id="emptyStateSeedBtn">
+          <button type="button" class="btn btn-primary btn-sm" id="emptyStateSeedBtn">
             <i class="fa-solid fa-database"></i> Load Sample Resources
           </button>
         </div>
@@ -123,7 +125,9 @@ function renderRecentResources(resources) {
 
   container.innerHTML = resources.map(res => {
     const isFav = userFavoriteIds.has(res.id);
-    const badge = getTypeBadge(res.type);
+    const fileType = res.fileType || res.type || 'PDF';
+    const badge = getTypeBadge(fileType);
+    const unitText = res.unit || 'Unit 1';
 
     return `
       <div class="resource-card" data-id="${res.id}">
@@ -132,7 +136,7 @@ function renderRecentResources(resources) {
             <div class="type-icon ${badge.cssClass}">
               <i class="${badge.icon}"></i>
             </div>
-            <span>${escapeHTML(res.type || 'Resource')}</span>
+            <span>${escapeHTML(fileType)}</span>
           </div>
           <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-id="${res.id}" title="${isFav ? 'Remove Favorite' : 'Save to Favorites'}">
             <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-star"></i>
@@ -141,37 +145,33 @@ function renderRecentResources(resources) {
 
         <div class="card-body">
           <div class="card-meta-tags">
-            <span class="badge badge-primary">${escapeHTML(res.category)}</span>
-            <span class="badge badge-secondary">${escapeHTML(res.subject)}</span>
-            ${res.semester ? `<span class="badge badge-muted">${escapeHTML(res.semester)}</span>` : ''}
+            <span class="badge badge-secondary">${escapeHTML(res.subject || 'General')}</span>
+            <span class="badge badge-primary">${escapeHTML(unitText)}</span>
           </div>
+
           <h4 class="resource-title" title="${escapeHTML(res.title)}">${escapeHTML(res.title)}</h4>
-          <p class="resource-description">${escapeHTML(res.description || 'No description provided.')}</p>
-          
-          ${res.tags && res.tags.length > 0 ? `
-            <div class="resource-tags">
-              ${res.tags.slice(0, 3).map(t => `<span class="tag-pill">#${escapeHTML(t)}</span>`).join('')}
-              ${res.tags.length > 3 ? `<span class="tag-pill">+${res.tags.length - 3}</span>` : ''}
-            </div>
-          ` : ''}
+          <p class="resource-description">${escapeHTML(res.description || 'Comprehensive notes and study reference material.')}</p>
         </div>
 
         <div class="card-footer">
           <div class="uploader-info">
-            <i class="fa-regular fa-user"></i>
-            <span>${escapeHTML(res.uploaderName || 'Student')}</span>
-            <span>&bull;</span>
+            <i class="fa-regular fa-calendar"></i>
             <span>${formatDate(res.createdAt)}</span>
           </div>
-          <button class="btn btn-outline btn-sm view-resource-btn" data-view-id="${res.id}">
-            <i class="fa-solid fa-eye"></i> View
-          </button>
+          <div style="display:flex; gap:0.4rem;">
+            <button class="btn btn-outline btn-sm view-resource-btn" data-view-id="${res.id}" title="View Details">
+              <i class="fa-solid fa-circle-info"></i>
+            </button>
+            <button class="btn btn-primary btn-sm open-resource-btn" data-url="${escapeHTML(res.fileUrl)}" data-id="${res.id}" data-downloads="${res.downloadCount || 0}">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open
+            </button>
+          </div>
         </div>
       </div>
     `;
   }).join('');
 
-  // Attach event listeners for Favorites & View Modal
+  // Favorites listener
   container.querySelectorAll('.fav-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -190,12 +190,28 @@ function renderRecentResources(resources) {
         userFavoriteIds.delete(resId);
         showToast("Removed", "Removed from your favorites.", "info");
       }
-      
-      // Update favorites metric counter
-      document.getElementById('statFavorites').textContent = userFavoriteIds.size;
     });
   });
 
+  // Open resource button listener
+  container.querySelectorAll('.open-resource-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const url = btn.getAttribute('data-url');
+      const id = btn.getAttribute('data-id');
+      const count = parseInt(btn.getAttribute('data-downloads') || '0', 10);
+
+      if (!url) {
+        showToast("Unavailable", "File link not provided for this resource.", "warning");
+        return;
+      }
+
+      incrementDownloadCount(id, count);
+      window.open(url, "_blank");
+    });
+  });
+
+  // View modal listener
   container.querySelectorAll('.view-resource-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const resId = btn.getAttribute('data-view-id');
@@ -205,7 +221,6 @@ function renderRecentResources(resources) {
           const status = await toggleFavorite(currentUser.uid, id);
           if (status) userFavoriteIds.add(id);
           else userFavoriteIds.delete(id);
-          document.getElementById('statFavorites').textContent = userFavoriteIds.size;
           renderRecentResources(recentResources);
           return status;
         });
