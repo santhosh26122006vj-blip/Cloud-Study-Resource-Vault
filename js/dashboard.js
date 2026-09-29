@@ -1,6 +1,6 @@
 /**
  * Dashboard Controller
- * Displays dynamic statistics (Total Resources, Published Resources, Subjects, Units),
+ * Displays personal vault statistics (Total Resources, Saved Resources, Subjects, Units),
  * quick shortcuts, recently added study materials, and direct resource access.
  * Spark plan compatible: Zero Firebase Storage dependency.
  */
@@ -9,7 +9,6 @@ import { initAuthGuard } from './auth.js';
 import { initSidebar, showToast, renderResourceDetailModal, formatDate, getTypeBadge, escapeHTML } from './ui.js';
 import { getDashboardStats, getRecentlyAddedResources, getUserFavoriteIds, toggleFavorite, incrementDownloadCount } from './resource-service.js';
 import { openStudyResource } from './file-storage.js';
-import { seedDemoData } from './demo-data.js';
 
 let currentUser = null;
 let userFavoriteIds = new Set();
@@ -18,11 +17,11 @@ let recentResources = [];
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
 
-  initAuthGuard({ requireAuth: true, requireAdmin: false }, async (profile) => {
+  initAuthGuard({ requireAuth: true }, async (profile) => {
     currentUser = profile;
     const greetingEl = document.getElementById('welcomeGreeting');
     if (greetingEl) {
-      greetingEl.textContent = `Welcome back, ${profile.name || (profile.role === 'admin' ? 'Administrator' : 'Student')} 👋`;
+      greetingEl.textContent = `Welcome back, ${profile.name || 'Student'} 👋`;
     }
 
     await loadDashboardData();
@@ -47,29 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
     dashSearchBtn.addEventListener('click', handleSearch);
   }
 
-  // Seed demo data button
-  const seedBtn = document.getElementById('seedDemoDataBtn');
-  if (seedBtn) {
-    seedBtn.addEventListener('click', async () => {
-      seedBtn.disabled = true;
-      seedBtn.innerHTML = `<span class="spinner"></span> Seeding...`;
-      await seedDemoData(currentUser);
-      await loadDashboardData();
-      seedBtn.disabled = false;
-      seedBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> Load Demo College Resources`;
-    });
-  }
 });
 
 async function loadDashboardData() {
   try {
-    const isAdmin = currentUser?.role === 'admin';
-
     // 1. Fetch Stats & Favorites concurrently
     const [stats, favIds, recents] = await Promise.all([
       getDashboardStats(currentUser?.uid),
       getUserFavoriteIds(currentUser?.uid),
-      getRecentlyAddedResources(6, !isAdmin)
+      getRecentlyAddedResources(6)
     ]);
 
     userFavoriteIds = favIds;
@@ -77,12 +62,12 @@ async function loadDashboardData() {
 
     // Update Telemetry Elements
     const elTotal = document.getElementById('statTotalResources');
-    const elPub = document.getElementById('statPublishedResources');
+    const elPub = document.getElementById('statSavedResources');
     const elSub = document.getElementById('statTotalSubjects');
     const elUnits = document.getElementById('statTotalUnits');
 
     if (elTotal) elTotal.textContent = stats.totalResources;
-    if (elPub) elPub.textContent = stats.publishedResources;
+    if (elPub) elPub.textContent = stats.savedResources;
     if (elSub) elSub.textContent = stats.totalSubjects;
     if (elUnits) elUnits.textContent = stats.totalUnits;
 
@@ -104,23 +89,10 @@ function renderRecentResources(resources) {
       <div class="empty-state">
         <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
         <h3>No Study Resources Yet</h3>
-        <p>Your cloud repository is currently clean. Start by uploading syllabus notes or click below to load demo college resources.</p>
-        <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary btn-sm" id="emptyStateSeedBtn">
-            <i class="fa-solid fa-database"></i> Load Sample Resources
-          </button>
-        </div>
+        <p>Your personal cloud vault is empty. Upload your first study resource to get started.</p>
       </div>
     `;
 
-    const emptySeed = document.getElementById('emptyStateSeedBtn');
-    if (emptySeed) {
-      emptySeed.onclick = async () => {
-        emptySeed.disabled = true;
-        await seedDemoData(currentUser);
-        await loadDashboardData();
-      };
-    }
     return;
   }
 

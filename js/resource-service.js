@@ -47,7 +47,7 @@ function saveMockFavorites(list) {
 // ============================================================================
 // FETCH RESOURCES
 // ============================================================================
-export async function getAllResources(onlyPublished = false) {
+export async function getAllResources() {
   // Every resource query is scoped to the currently authenticated account.
   // This is intentionally enforced here as well as in firestore.rules.
   if (!isConfigured) {
@@ -56,9 +56,6 @@ export async function getAllResources(onlyPublished = false) {
     if (!userId) return [];
 
     let list = getMockResources().filter(r => r.uploadedBy === userId);
-    if (onlyPublished) {
-      list = list.filter(r => r.isPublished !== false);
-    }
     return list.sort((a, b) => {
       const tA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
       const tB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
@@ -80,9 +77,6 @@ export async function getAllResources(onlyPublished = false) {
     const snapshot = await getDocs(q);
     let list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    if (onlyPublished) {
-      list = list.filter(r => r.isPublished !== false);
-    }
 
     return list.sort((a, b) => {
       const tA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
@@ -95,8 +89,8 @@ export async function getAllResources(onlyPublished = false) {
   }
 }
 
-export async function getRecentlyAddedResources(max = 6, onlyPublished = true) {
-  const all = await getAllResources(onlyPublished);
+export async function getRecentlyAddedResources(max = 6) {
+  const all = await getAllResources();
   return all.slice(0, max);
 }
 
@@ -115,7 +109,7 @@ export async function getUserResources(userId) {
   }
 
   if (auth?.currentUser?.uid !== userId) return [];
-  return getAllResources(false);
+  return getAllResources();
 }
 
 // ============================================================================
@@ -205,7 +199,6 @@ export async function createResource({
   fileUrl = '',
   fileType = 'PDF',
   file = null,
-  isPublished = true,
   currentUser
 }) {
   if (!title || !title.trim()) {
@@ -272,7 +265,6 @@ export async function createResource({
     uploaderName: uploaderName,
     createdAt: isConfigured ? serverTimestamp() : new Date().toISOString(),
     downloadCount: 0,
-    isPublished: isPublished !== false
   };
 
   // Mock mode fallback
@@ -351,16 +343,7 @@ export async function updateResource(resourceId, updatedData) {
 }
 
 // ============================================================================
-// TOGGLE PUBLICATION STATUS
-// ============================================================================
-export async function togglePublishStatus(resourceId, currentStatus) {
-  const newStatus = !currentStatus;
-  await updateResource(resourceId, { isPublished: newStatus });
-  return newStatus;
-}
-
-// ============================================================================
-// INCREMENT DOWNLOAD / OPEN COUNT
+// DOWNLOAD COUNT
 // ============================================================================
 export async function incrementDownloadCount(resourceId, currentCount = 0) {
   try {
@@ -427,11 +410,11 @@ export async function deleteResource(resourceId) {
 }
 
 // ============================================================================
-// DASHBOARD & ADMIN METRICS
+// DASHBOARD METRICS
 // ============================================================================
 export async function getDashboardStats(userId = null) {
-  const allResources = await getAllResources(false);
-  const published = allResources.filter(r => r.isPublished !== false);
+  const allResources = await getAllResources();
+  const saved = allResources;
   
   // Count unique subjects & units
   const subjects = new Set(allResources.map(r => r.subject).filter(Boolean));
@@ -445,7 +428,7 @@ export async function getDashboardStats(userId = null) {
 
   return {
     totalResources: allResources.length,
-    publishedResources: published.length,
+    savedResources: saved.length,
     totalSubjects: subjects.size,
     totalUnits: units.size,
     favorites: favCount

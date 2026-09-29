@@ -1,17 +1,8 @@
-/**
- * My Resources Redirect Controller
- * Routes administrators to the centralized Admin Portal (admin.html),
- * and students to the Browse Resources page (resources.html).
- */
-
+/** Student My Resources route. */
 import { initAuthGuard } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  initAuthGuard({ requireAuth: true, requireAdmin: false }, (profile) => {
-    if (profile?.role === 'admin') {
-      window.location.replace('admin.html');
-    } else {
-      window.location.replace('resources.html');
-    }
+  initAuthGuard({ requireAuth: true }, () => {
+    window.location.replace('resources.html');
   });
 });

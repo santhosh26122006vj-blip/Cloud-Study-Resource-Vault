@@ -35,11 +35,7 @@
         </a>
         <a href="resources.html" class="nav-item">
           <i class="fa-solid fa-compass"></i>
-          <span>Browse Resources</span>
-        </a>
-        <a href="admin.html" class="nav-item">
-          <i class="fa-solid fa-shield-halved"></i>
-          <span>Admin Portal</span>
+          <span>My Resources</span>
         </a>
         <a href="add-resource.html" class="nav-item active">
           <i class="fa-solid fa-plus-circle"></i>
@@ -60,7 +56,7 @@
         <div class="user-snippet">
           <div class="user-avatar-circle" style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);">A</div>
           <div class="user-snippet-info">
-            <div class="user-snippet-name user-display-name">Student / Administrator</div>
+            <div class="user-snippet-name user-display-name">Student</div>
             <div class="user-snippet-role">
               <span class="badge badge-warning user-display-role" style="font-size:0.65rem; padding:0.15rem 0.45rem;">USER</span>
             </div>
@@ -86,9 +82,6 @@
         </div>
 
         <div class="header-right">
-          <a href="admin.html" class="btn btn-secondary btn-sm">
-            <i class="fa-solid fa-shield-halved"></i> Admin Portal
-          </a>
           <a href="resources.html" class="btn btn-secondary btn-sm">
             <i class="fa-solid fa-compass"></i> View Resources
           </a>
@@ -113,16 +106,13 @@
               <i class="fa-solid fa-check"></i>
             </div>
             <h3 style="color:#065f46; font-size:1.35rem; margin-bottom:0.4rem;">Resource Added Successfully!</h3>
-            <p style="color:#047857; font-size:0.9rem; margin-bottom:1.25rem;">Metadata document saved in Cloud Firestore. Students can now immediately view and open this resource.</p>
+            <p style="color:#047857; font-size:0.9rem; margin-bottom:1.25rem;">Your resource has been saved privately to your cloud vault.</p>
             <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
               <a href="resources.html" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-compass"></i> View in Browse
-              </a>
-              <a href="admin.html" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-shield-halved"></i> Admin Portal
+                <i class="fa-solid fa-compass"></i> View My Resources
               </a>
               <button type="button" class="btn btn-secondary btn-sm" id="uploadAnotherBtn">
-                <i class="fa-solid fa-plus"></i> Add Another Resource
+                <i class="fa-solid fa-plus"></i> Upload Another Resource
               </button>
             </div>
           </div>
@@ -232,20 +222,11 @@
                 </div>
               </div>
 
-              <!-- Published Status (Checkbox) -->
-              <div class="form-group" style="background:var(--bg-surface-secondary); padding:0.85rem 1rem; border-radius:var(--border-radius-md); border:1px solid var(--border-color); display:flex; align-items:center; gap:0.75rem;">
-                <input type="checkbox" id="resourcePublished" style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;" checked>
-                <label for="resourcePublished" style="margin:0; font-size:0.9rem; font-weight:600; cursor:pointer;">
-                  Published (Visible to students immediately)
-                </label>
-              </div>
-
               <!-- Submit Buttons -->
               <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                 <button type="submit" class="btn btn-primary" id="submitResourceBtn" style="flex: 1; padding: 0.75rem 1.5rem; font-size: 1rem;">
                   <i class="fa-solid fa-plus-circle"></i> ADD RESOURCE
                 </button>
-                <a href="admin.html" class="btn btn-secondary">Cancel</a>
               </div>
             </form>
 

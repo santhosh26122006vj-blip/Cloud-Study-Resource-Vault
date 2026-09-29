@@ -35,11 +35,7 @@
         </a>
         <a href="resources.html" class="nav-item">
           <i class="fa-solid fa-compass"></i>
-          <span>Browse Resources</span>
-        </a>
-        <a href="admin.html" class="nav-item admin-only">
-          <i class="fa-solid fa-shield-halved"></i>
-          <span>Admin Portal</span>
+          <span>My Resources</span>
         </a>
         <a href="add-resource.html" class="nav-item">
           <i class="fa-solid fa-plus-circle"></i>
@@ -100,23 +96,6 @@
       <!-- Content Container -->
       <main class="app-content">
 
-        <!-- Admin Quick Access Alert (Only visible to admin) -->
-        <div class="admin-only" style="background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%); border: 1px solid #fbd38d; border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.75rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-          <div style="display:flex; align-items:center; gap:0.75rem;">
-            <div style="width:40px; height:40px; border-radius:50%; background:#f59e0b; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
-              <i class="fa-solid fa-shield-halved"></i>
-            </div>
-          </div>
-          <div style="display:flex; gap:0.5rem;">
-            <a href="admin.html" class="btn btn-primary btn-sm" style="background:#b45309; border-color:#b45309;">
-              <i class="fa-solid fa-gear"></i> Admin Management Portal
-            </a>
-            <a href="add-resource.html" class="btn btn-secondary btn-sm" style="background:#fff; color:#78350f; border-color:#f59e0b;">
-              <i class="fa-solid fa-plus"></i> Add Resource
-            </a>
-          </div>
-        </div>
-
         <!-- Search Bar Banner -->
         <div class="quick-actions-bar" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: #fff; padding: 2rem 1.75rem; border: none; box-shadow: var(--shadow-md);">
           <div style="max-width: 600px;">
@@ -131,16 +110,9 @@
               </button>
             </div>
           </div>
-
-          <div style="display:flex; flex-direction:column; gap:0.5rem; align-items:flex-end;">
-            <button type="button" class="btn btn-secondary btn-sm" id="seedDemoDataBtn" style="background:rgba(255,255,255,0.2); color:#fff; border-color:rgba(255,255,255,0.4); backdrop-filter:blur(8px);">
-              <i class="fa-solid fa-cloud-arrow-down"></i> Load Demo College Resources
-            </button>
-            <span class="text-xs" style="color:#bfdbfe;">1-Click seed sample syllabus materials</span>
-          </div>
         </div>
 
-        <!-- Dynamic Statistics Cards (Requested: Total Resources, Published Resources, Subjects, Units) -->
+        <!-- Dynamic Statistics Cards (Requested: Total Resources, Saved Resources, Subjects, Units) -->
         <div class="stats-grid" id="dashboardStats">
           <!-- Total Resources -->
           <div class="stat-card">
@@ -153,14 +125,14 @@
             </div>
           </div>
 
-          <!-- Published Resources -->
+          <!-- Saved Resources -->
           <div class="stat-card">
             <div class="stat-icon emerald">
               <i class="fa-solid fa-circle-check"></i>
             </div>
             <div class="stat-info">
-              <h3 id="statPublishedResources">0</h3>
-              <p>Published Resources</p>
+              <h3 id="statSavedResources">0</h3>
+              <p>Saved Resources</p>
             </div>
           </div>
 
@@ -195,13 +167,10 @@
           </div>
           <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
             <a href="resources.html" class="btn btn-primary btn-sm">
-              <i class="fa-solid fa-compass"></i> Browse Resources
+              <i class="fa-solid fa-compass"></i> My Resources
             </a>
             <a href="favorites.html" class="btn btn-secondary btn-sm">
               <i class="fa-solid fa-star" style="color:#f59e0b;"></i> Favorites
-            </a>
-            <a href="admin.html" class="btn btn-outline btn-sm admin-only">
-              <i class="fa-solid fa-shield-halved"></i> Admin Portal
             </a>
             <a href="add-resource.html" class="btn btn-secondary btn-sm">
               <i class="fa-solid fa-plus"></i> Add Resource
@@ -217,7 +186,7 @@
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
             <div>
               <h3>Recently Added</h3>
-              <p class="text-sm text-muted">Latest study materials available in Cloud Firestore</p>
+              <p class="text-sm text-muted">Your latest saved study materials</p>
             </div>
             <a href="resources.html" class="btn btn-secondary btn-sm">
               View All <i class="fa-solid fa-arrow-right"></i>

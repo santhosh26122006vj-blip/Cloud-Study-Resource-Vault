@@ -12,7 +12,7 @@ let isConverting = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
-  initAuthGuard({ requireAuth: true, requireAdmin: false });
+  initAuthGuard({ requireAuth: true });
   bindImageTool();
 });
 

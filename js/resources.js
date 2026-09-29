@@ -25,7 +25,7 @@ const filters = {
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
 
-  initAuthGuard({ requireAuth: true, requireAdmin: false }, async (profile) => {
+  initAuthGuard({ requireAuth: true }, async (profile) => {
     currentUser = profile;
 
     // Parse URL Query parameters
@@ -113,17 +113,16 @@ function setupEventListeners() {
       if (sortSelect) sortSelect.value = 'newest';
 
       applyFiltersAndRender();
-      showToast("Filters Cleared", "Showing all published resources.", "info");
+      showToast("Filters Cleared", "Showing all of your saved resources.", "info");
     });
   }
 }
 
 async function fetchAndRender() {
   try {
-    // Only published resources for students, unless current user is admin
-    const isAdmin = currentUser?.role === 'admin';
+    // Resources are always limited to the signed-in student's UID.
     const [resources, favIds] = await Promise.all([
-      getAllResources(!isAdmin),
+      getAllResources(false),
       getUserFavoriteIds(currentUser?.uid)
     ]);
 

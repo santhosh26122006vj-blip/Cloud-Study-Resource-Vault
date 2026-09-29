@@ -18,7 +18,7 @@ const SUPPORTED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.doc', '.docx', '.txt'];
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
 
-  // Any authenticated student or administrator can upload resources.
+  // Any authenticated student can upload resources.
   initAuthGuard({ requireAuth: true }, (profile) => {
     currentUser = profile;
   });
@@ -187,7 +187,6 @@ function setupFormSubmission() {
     const description = document.getElementById('resourceDescription').value.trim();
     const fileName = document.getElementById('resourceFileName').value.trim();
     const fileType = document.getElementById('resourceFileType').value;
-    const isPublished = document.getElementById('resourcePublished').checked;
 
     // Field Validations
     if (!title) {
@@ -223,7 +222,6 @@ function setupFormSubmission() {
         fileUrl: selectedFile ? `resources/${selectedFile.name}` : `resources/${fileName}`,
         fileType: fileType,
         file: selectedFile,
-        isPublished: isPublished,
         currentUser: currentUser
       });
 

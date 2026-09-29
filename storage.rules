@@ -13,7 +13,7 @@ service firebase.storage {
     // Resource files use:
     // resources/{userId}/{resourceId}/{filename}
     match /resources/{userId}/{resourceId}/{filename} {
-      // Only the owning account can access its files.
+      // Only the owning student account can access its files.
       allow read: if isOwner(userId);
 
       allow create: if isOwner(userId)
