@@ -7,6 +7,7 @@
 
 import {
   db,
+  auth,
   isConfigured,
   collection,
   doc,
@@ -47,37 +48,50 @@ function saveMockFavorites(list) {
 // FETCH RESOURCES
 // ============================================================================
 export async function getAllResources(onlyPublished = false) {
+  // Every resource query is scoped to the currently authenticated account.
+  // This is intentionally enforced here as well as in firestore.rules.
   if (!isConfigured) {
-    const list = getMockResources();
-    return onlyPublished ? list.filter(r => r.isPublished !== false) : list;
+    const mockUser = JSON.parse(localStorage.getItem('study_vault_mock_user') || 'null');
+    const userId = mockUser?.uid;
+    if (!userId) return [];
+
+    let list = getMockResources().filter(r => r.uploadedBy === userId);
+    if (onlyPublished) {
+      list = list.filter(r => r.isPublished !== false);
+    }
+    return list.sort((a, b) => {
+      const tA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
+      const tB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
+      return tB - tA;
+    });
   }
 
+  const userId = auth?.currentUser?.uid;
+  if (!userId) return [];
+
   try {
-    let q;
-    if (onlyPublished) {
-      q = query(collection(db, "resources"), where("isPublished", "==", true));
-    } else {
-      q = query(collection(db, "resources"), orderBy("createdAt", "desc"));
-    }
+    // Do NOT use a collection-wide fallback. Firestore security rules require
+    // the query to prove that the requested resources belong to this user.
+    const q = query(
+      collection(db, "resources"),
+      where("uploadedBy", "==", userId)
+    );
+
     const snapshot = await getDocs(q);
-    const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    let list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (onlyPublished) {
+      list = list.filter(r => r.isPublished !== false);
+    }
+
     return list.sort((a, b) => {
       const tA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
       const tB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
       return tB - tA;
     });
   } catch (error) {
-    console.warn("Unordered query fallback for resources:", error);
-    const snapshot = await getDocs(collection(db, "resources"));
-    let list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (onlyPublished) {
-      list = list.filter(r => r.isPublished !== false);
-    }
-    return list.sort((a, b) => {
-      const tA = a.createdAt?.seconds || 0;
-      const tB = b.createdAt?.seconds || 0;
-      return tB - tA;
-    });
+    console.error("Error fetching user resources:", error);
+    throw error;
   }
 }
 
@@ -87,8 +101,21 @@ export async function getRecentlyAddedResources(max = 6, onlyPublished = true) {
 }
 
 export async function getUserResources(userId) {
-  const all = await getAllResources(false);
-  return all.filter(r => r.uploadedBy === userId);
+  if (!userId) return [];
+
+  // In Firebase mode, the query is always limited to the authenticated user.
+  // In mock mode, filter the local data by the supplied owner UID.
+  if (!isConfigured) {
+    let list = getMockResources().filter(r => r.uploadedBy === userId);
+    return list.sort((a, b) => {
+      const tA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
+      const tB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
+      return tB - tA;
+    });
+  }
+
+  if (auth?.currentUser?.uid !== userId) return [];
+  return getAllResources(false);
 }
 
 // ============================================================================
@@ -225,8 +252,11 @@ export async function createResource({
     }
   }
 
-  const uploaderId = currentUser?.uid || "user-system";
-  const uploaderName = currentUser?.name || currentUser?.displayName || (currentUser?.role === 'admin' ? "Administrator" : "Student");
+  const uploaderId = currentUser?.uid || auth?.currentUser?.uid;
+  if (!uploaderId) {
+    throw new Error("You must be logged in to save a resource.");
+  }
+  const uploaderName = currentUser?.name || currentUser?.displayName || auth?.currentUser?.displayName || "Student";
 
   const resourceData = {
     title: title.trim(),
@@ -284,8 +314,10 @@ export async function updateResource(resourceId, updatedData) {
   if (!resourceId) throw new Error("Missing resource ID.");
 
   if (!isConfigured) {
+    const mockUser = JSON.parse(localStorage.getItem('study_vault_mock_user') || 'null');
     const list = getMockResources();
-    const index = list.findIndex(r => r.id === resourceId);
+    const index = list.findIndex(r => r.id === resourceId && r.uploadedBy === mockUser?.uid);
+
     if (index >= 0) {
       list[index] = {
         ...list[index],
@@ -295,10 +327,23 @@ export async function updateResource(resourceId, updatedData) {
       saveMockResources(list);
       return list[index];
     }
-    throw new Error("Resource not found in local mock.");
+    throw new Error("Resource not found or it does not belong to your account.");
   }
 
+  const userId = auth?.currentUser?.uid;
+  if (!userId) throw new Error("You must be logged in to update a resource.");
+
   const docRef = doc(db, "resources", resourceId);
+  const resourceSnap = await getDoc(docRef);
+
+  if (!resourceSnap.exists()) {
+    throw new Error("Resource not found.");
+  }
+
+  if (resourceSnap.data().uploadedBy !== userId) {
+    throw new Error("You can only edit resources belonging to your account.");
+  }
+
   await updateDoc(docRef, {
     ...updatedData,
     updatedAt: serverTimestamp()
@@ -333,7 +378,15 @@ export async function deleteResource(resourceId) {
   if (!resourceId) throw new Error("Missing resource ID.");
 
   if (!isConfigured) {
+    const mockUser = JSON.parse(localStorage.getItem('study_vault_mock_user') || 'null');
     let list = getMockResources();
+    const resource = list.find(r => r.id === resourceId);
+
+    if (!resource) throw new Error("Resource not found.");
+    if (resource.uploadedBy !== mockUser?.uid) {
+      throw new Error("You can only delete resources belonging to your account.");
+    }
+
     list = list.filter(r => r.id !== resourceId);
     saveMockResources(list);
 
@@ -343,12 +396,27 @@ export async function deleteResource(resourceId) {
     return;
   }
 
-  // 1. Delete Firestore document
-  await deleteDoc(doc(db, "resources", resourceId));
+  const userId = auth?.currentUser?.uid;
+  if (!userId) throw new Error("You must be logged in to delete a resource.");
 
-  // 2. Remove related favorites
+  const resourceRef = doc(db, "resources", resourceId);
+  const resourceSnap = await getDoc(resourceRef);
+
+  if (!resourceSnap.exists()) throw new Error("Resource not found.");
+  if (resourceSnap.data().uploadedBy !== userId) {
+    throw new Error("You can only delete resources belonging to your account.");
+  }
+
+  // Delete only the resource owned by the signed-in user.
+  await deleteDoc(resourceRef);
+
+  // Remove favorites associated with this resource.
   try {
-    const favQuery = query(collection(db, "favorites"), where("resourceId", "==", resourceId));
+    const favQuery = query(
+      collection(db, "favorites"),
+      where("resourceId", "==", resourceId),
+      where("userId", "==", userId)
+    );
     const favSnaps = await getDocs(favQuery);
     for (const d of favSnaps.docs) {
       await deleteDoc(d.ref);
