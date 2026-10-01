@@ -7,7 +7,7 @@
 
 import { initAuthGuard } from './auth.js';
 import { initSidebar, showToast, renderResourceDetailModal, formatDate, getTypeBadge, escapeHTML } from './ui.js';
-import { getAllResources, getUserFavoriteIds, toggleFavorite, incrementDownloadCount } from './resource-service.js';
+import { getAllResources, getUserFavoriteIds, toggleFavorite, incrementDownloadCount, deleteResource } from './resource-service.js';
 import { openStudyResource } from './file-storage.js';
 
 let currentUser = null;
@@ -270,6 +270,11 @@ function renderGrid(resources) {
             <button class="btn btn-primary btn-sm open-resource-btn" data-url="${escapeHTML(res.fileUrl)}" data-id="${res.id}" data-downloads="${res.downloadCount || 0}">
               <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Resource
             </button>
+            ${res.uploadedBy === currentUser?.uid ? `
+              <button type="button" class="btn btn-danger btn-sm delete-resource-btn" data-id="${res.id}" title="Delete resource">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -315,6 +320,31 @@ function renderGrid(resources) {
 
       // Open via Blob, Base64, or URL
       await openStudyResource(item);
+    });
+  });
+
+  container.querySelectorAll('.delete-resource-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      const item = allResources.find(resource => resource.id === id);
+      if (!item || item.uploadedBy !== currentUser?.uid) return;
+
+      const confirmed = window.confirm(`Delete "${item.title}"? This removes the resource and its stored data. Project files and external URLs are not deleted.`);
+      if (!confirmed) return;
+
+      btn.disabled = true;
+      try {
+        await deleteResource(id);
+        allResources = allResources.filter(resource => resource.id !== id);
+        userFavoriteIds.delete(id);
+        applyFiltersAndRender();
+        showToast("Deleted", "Resource and stored data deleted.", "success");
+      } catch (error) {
+        console.error("Resource deletion error:", error);
+        showToast("Delete Failed", error.message, "error");
+        btn.disabled = false;
+      }
     });
   });
 

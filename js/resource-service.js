@@ -23,7 +23,7 @@ import {
   serverTimestamp
 } from './firebase-config.js';
 
-import { saveFileBlob, fileToBase64 } from './file-storage.js';
+import { saveFileBlob, fileToBase64, deleteFileBlob } from './file-storage.js';
 
 // ============================================================================
 // LOCAL STORAGE MOCK HELPERS (Offline / Demo Fallback)
@@ -355,7 +355,7 @@ export async function incrementDownloadCount(resourceId, currentCount = 0) {
 }
 
 // ============================================================================
-// DELETE RESOURCE (Firestore Document Only — ZERO physical file deletion)
+// DELETE RESOURCE
 // ============================================================================
 export async function deleteResource(resourceId) {
   if (!resourceId) throw new Error("Missing resource ID.");
@@ -372,6 +372,11 @@ export async function deleteResource(resourceId) {
 
     list = list.filter(r => r.id !== resourceId);
     saveMockResources(list);
+
+    await deleteFileBlob(resourceId);
+    if (resource.fileName && !list.some(r => r.fileName === resource.fileName)) {
+      await deleteFileBlob(resource.fileName);
+    }
 
     let favs = getMockFavorites();
     favs = favs.filter(f => f.resourceId !== resourceId);
@@ -392,6 +397,8 @@ export async function deleteResource(resourceId) {
 
   // Delete only the resource owned by the signed-in user.
   await deleteDoc(resourceRef);
+
+  await deleteFileBlob(resourceId);
 
   // Remove favorites associated with this resource.
   try {

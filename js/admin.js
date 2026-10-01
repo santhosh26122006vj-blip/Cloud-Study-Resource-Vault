@@ -273,7 +273,7 @@ function renderTable(resources) {
             </button>
 
             <!-- Delete -->
-            <button type="button" class="btn btn-danger btn-sm action-delete-btn" data-id="${res.id}" data-title="${escapeHTML(res.title)}" title="Delete Firestore document">
+            <button type="button" class="btn btn-danger btn-sm action-delete-btn" data-id="${res.id}" data-title="${escapeHTML(res.title)}" title="Delete resource and stored data">
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </div>
@@ -337,12 +337,12 @@ function renderTable(resources) {
       const id = btn.getAttribute('data-id');
       const title = btn.getAttribute('data-title');
 
-      const confirmed = window.confirm(`Are you sure you want to delete the resource "${title}"?\n\nNOTE: This deletes the metadata document from Cloud Firestore. The local physical file in /resources/ is preserved.`);
+      const confirmed = window.confirm(`Are you sure you want to delete the resource "${title}"?\n\nThis removes the resource and its stored data. Project files and external URLs are not deleted.`);
       if (!confirmed) return;
 
       try {
         await deleteResource(id);
-        showToast("Deleted", "Resource deleted from Cloud Firestore.", "success");
+        showToast("Deleted", "Resource and stored data deleted.", "success");
         await loadAdminData();
       } catch (err) {
         console.error("Delete error:", err);

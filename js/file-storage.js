@@ -105,6 +105,26 @@ export async function getFileBlob(key) {
   }
 }
 
+export async function deleteFileBlob(key) {
+  if (!key) return false;
+
+  try {
+    const db = await initFileDB();
+    if (!db) return false;
+
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+      tx.onabort = () => resolve(false);
+    });
+  } catch (error) {
+    console.warn("deleteFileBlob error:", error);
+    return false;
+  }
+}
+
 // ============================================================================
 // CONVERT FILE TO BASE64 DATA URI
 // ============================================================================
